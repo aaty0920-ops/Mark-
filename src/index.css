@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Carter+One&family=Kanit:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Kanit", ui-sans-serif, system-ui, sans-serif;
+  --font-kanit: "Kanit", sans-serif;
+  --font-carter: "Carter One", cursive;
+  --color-brand: #FF6B00;
+  --color-brand-100: #FFE5D0;
+}
