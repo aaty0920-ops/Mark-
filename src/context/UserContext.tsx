@@ -250,6 +250,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const setTheme = (newTheme: 'light' | 'dark' | 'system') => {
     setThemeState(newTheme);
     updateUserProfile({ theme: newTheme });
+    
+    // Apply theme to document
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+
+    if (newTheme === 'system') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(newTheme);
+    }
   };
 
   const setNotifications = async (prefs: NotificationPrefs) => {
@@ -356,7 +367,18 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setPointsEarned(data.points || 0);
               setStreak(data.streak || 0);
               setUserRank(data.rank || 1000);
-              if (data.theme) setThemeState(data.theme);
+              if (data.theme) {
+                setThemeState(data.theme);
+                // Apply theme to document
+                const root = window.document.documentElement;
+                root.classList.remove('light', 'dark');
+                if (data.theme === 'system') {
+                  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  root.classList.add(systemTheme);
+                } else {
+                  root.classList.add(data.theme);
+                }
+              }
               if (data.notifications) setNotificationsState(data.notifications);
               if (data.profilePic) setProfilePicState(data.profilePic);
               if (data.chapterProgress) setChapterProgress(data.chapterProgress);
@@ -474,7 +496,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error.code === 'auth/operation-not-allowed') {
         throw new Error('Email/Password authentication is not enabled. Please enable it in the Firebase Console under Authentication > Sign-in method.');
       }
-      console.error("Error signing in with email", error);
       throw error;
     }
   };
@@ -506,7 +527,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error.code === 'auth/operation-not-allowed') {
         throw new Error('Email/Password authentication is not enabled. Please enable it in the Firebase Console under Authentication > Sign-in method.');
       }
-      console.error("Error signing up with email", error);
       throw error;
     }
   };

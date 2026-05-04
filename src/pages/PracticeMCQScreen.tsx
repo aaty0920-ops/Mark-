@@ -182,7 +182,10 @@ const PracticeMCQScreen = () => {
   });
 
   useEffect(() => {
-    if (!currentQuestion?.id) return;
+    if (!currentQuestion?.id || !user || user.uid === 'demo') {
+      setLoadingSolutions(false);
+      return;
+    }
     
     setLoadingSolutions(true);
     const q = query(
@@ -716,6 +719,13 @@ const PracticeMCQScreen = () => {
         </div>
         
         <div className="flex items-center gap-1 md:gap-2">
+          <button 
+            onClick={() => setShowPalette(true)}
+            className="p-2 text-slate-400 hover:text-brand hover:bg-brand/10 rounded-full transition-colors" 
+            title="Question Palette"
+          >
+            <LayoutGrid size={20} />
+          </button>
           {isQuizActive && (
             <button 
               onClick={() => setShowSubmitConfirm(true)}
@@ -834,32 +844,6 @@ const PracticeMCQScreen = () => {
           
           {/* Action Buttons */}
           <div className="mt-6 flex flex-col gap-3">
-            <div className="flex gap-3">
-              <button
-                onClick={handlePrev}
-                disabled={currentIndex === 0}
-                className="flex-1 py-3 bg-slate-800 text-slate-300 border border-white/5 rounded-xl font-bold hover:bg-slate-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                <ChevronLeft size={20} /> <span className="hidden sm:inline">Previous</span>
-              </button>
-              
-              {isQuizActive && currentIndex === MOCK_QUESTIONS.length - 1 ? (
-                <button
-                  onClick={() => setShowSubmitConfirm(true)}
-                  className="flex-1 py-3 bg-brand text-white border border-brand/20 rounded-xl font-bold hover:bg-brand-light transition-colors shadow-lg shadow-brand/20 flex items-center justify-center gap-2"
-                >
-                  <span className="hidden sm:inline">Submit Quiz</span> <CheckCircle2 size={20} />
-                </button>
-              ) : (
-                <button
-                  onClick={handleNext}
-                  disabled={currentIndex === MOCK_QUESTIONS.length - 1}
-                  className="flex-1 py-3 bg-slate-800 text-slate-300 border border-white/5 rounded-xl font-bold hover:bg-slate-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <span className="hidden sm:inline">Next</span> <ChevronRight size={20} />
-                </button>
-              )}
-            </div>
             {!isQuizActive && (
               <div className="flex flex-wrap gap-3">
                 {!isSubmitted ? (
@@ -911,6 +895,14 @@ const PracticeMCQScreen = () => {
                   </>
                 )}
               </div>
+            )}
+            {isQuizActive && currentIndex === MOCK_QUESTIONS.length - 1 && (
+              <button
+                onClick={() => setShowSubmitConfirm(true)}
+                className="w-full py-3 bg-brand text-white border border-brand/20 rounded-xl font-bold hover:bg-brand-light transition-colors shadow-lg shadow-brand/20 flex items-center justify-center gap-2"
+              >
+                <span>Submit Quiz</span> <CheckCircle2 size={20} />
+              </button>
             )}
           </div>
         </motion.div>
@@ -1305,44 +1297,74 @@ const PracticeMCQScreen = () => {
       </main>
 
       {/* Question Navigation Bar (Bottom) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-white/5 p-3 md:p-4 z-40 overflow-x-auto no-scrollbar">
-        <div className="flex items-center gap-2 min-w-max px-2 md:justify-center">
-          {MOCK_QUESTIONS.map((q, idx) => {
-            const state = questionStates[q.id] || 'unvisited';
-            const isCurrent = idx === currentIndex;
-            const isBookmarked = bookmarked[q.id];
-            
-            let bgColor = 'bg-slate-800 text-slate-300 hover:bg-slate-700';
-            let borderColor = 'border-white/5';
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-white/5 p-3 md:p-4 z-40">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+          <button 
+            onClick={() => setShowPalette(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors border border-white/10 shrink-0"
+          >
+            <LayoutGrid size={20} className="text-brand" />
+            <span className="hidden sm:inline">All Questions</span>
+          </button>
+          
+          <div className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-2 md:justify-center px-2 py-1 mask-linear-fade">
+            {MOCK_QUESTIONS.map((q, idx) => {
+              const state = questionStates[q.id] || 'unvisited';
+              const isCurrent = idx === currentIndex;
+              const isBookmarked = bookmarked[q.id];
+              
+              let bgColor = 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200';
+              let borderColor = 'border-white/5';
 
-            if (state === 'correct') {
-              bgColor = 'bg-emerald-500/20 text-emerald-400';
-              borderColor = 'border-emerald-500/30';
-            } else if (state === 'incorrect') {
-              bgColor = 'bg-rose-500/20 text-rose-400';
-              borderColor = 'border-rose-500/30';
-            } else if (state === 'attempted') {
-              bgColor = 'bg-blue-500/20 text-blue-400';
-              borderColor = 'border-blue-500/30';
-            }
-            
-            if (isCurrent) {
-              borderColor = 'border-white ring-2 ring-white/20';
-            }
-            
-            return (
-              <button
-                key={q.id}
-                onClick={() => setCurrentIndex(idx)}
-                className={`relative w-10 h-10 md:w-12 md:h-12 rounded-xl font-bold text-sm md:text-base flex items-center justify-center transition-all shrink-0 border ${bgColor} ${borderColor}`}
-              >
-                {idx + 1}
-                {isBookmarked && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border-2 border-slate-900" />
-                )}
-              </button>
-            );
-          })}
+              if (state === 'correct') {
+                bgColor = 'bg-emerald-500/20 text-emerald-400';
+                borderColor = 'border-emerald-500/30';
+              } else if (state === 'incorrect') {
+                bgColor = 'bg-rose-500/20 text-rose-400';
+                borderColor = 'border-rose-500/30';
+              } else if (state === 'attempted') {
+                bgColor = 'bg-blue-500/20 text-blue-400';
+                borderColor = 'border-blue-500/30';
+              }
+              
+              if (isCurrent) {
+                borderColor = 'border-brand ring-2 ring-brand/20';
+                bgColor = state === 'unvisited' ? 'bg-brand/10 text-brand' : bgColor;
+              }
+              
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`relative w-10 h-10 md:w-11 md:h-11 rounded-full font-bold text-sm flex items-center justify-center transition-all shrink-0 border ${bgColor} ${borderColor}`}
+                >
+                  {idx + 1}
+                  {isBookmarked && (
+                    <div className="absolute -top-0 -right-0 w-3 h-3 bg-yellow-500 rounded-full border-2 border-slate-900" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className="p-2 md:px-4 md:py-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/5 flex items-center gap-2"
+            >
+              <ChevronLeft size={20} />
+              <span className="hidden sm:inline">Prev</span>
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={currentIndex === MOCK_QUESTIONS.length - 1}
+              className="p-2 md:px-4 md:py-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/5 flex items-center gap-2"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1400,52 +1422,60 @@ const PracticeMCQScreen = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-slate-900 border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-md shadow-2xl max-h-[80vh] flex flex-col"
+              className="bg-slate-900 border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-lg shadow-2xl max-h-[85vh] flex flex-col"
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-white">Question Palette</h3>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Question Palette</h3>
+                  <p className="text-sm text-slate-400 mt-1">Jump directly to any question</p>
+                </div>
                 <button 
                   onClick={() => setShowPalette(false)}
-                  className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
+                  className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full transition-colors self-start"
                 >
                   <X size={20} />
                 </button>
               </div>
               
-              <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-3 overflow-y-auto p-1">
+              {/* Legends */}
+              <div className="mb-6 flex flex-wrap gap-3 text-xs font-bold text-slate-300 bg-slate-800/50 p-4 rounded-2xl border border-white/5">
+                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-slate-700 border border-white/10"></div> Unvisited</div>
+                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500/20 border border-blue-500/50"><div className="w-full h-full text-blue-400 flex items-center justify-center text-[10px]">✓</div></div> Attempted</div>
+                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500/50"></div> Correct</div>
+                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-rose-500/20 border border-rose-500/50"></div> Incorrect</div>
+                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full flex items-center justify-center bg-yellow-500"><Bookmark size={10} className="text-slate-900 fill-slate-900" /></div> Bookmarked</div>
+              </div>
+
+              {/* Grid */}
+              <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 gap-3 overflow-y-auto p-1 pr-2 custom-scrollbar">
                 {MOCK_QUESTIONS.map((q, idx) => {
                   const state = questionStates[q.id] || 'unvisited';
                   const isCurrent = idx === currentIndex;
                   const isBookmarked = bookmarked[q.id];
                   
-                  let bgColor = 'bg-slate-800 text-slate-300 hover:bg-slate-700';
-                  if (state === 'correct') bgColor = 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20';
-                  else if (state === 'incorrect') bgColor = 'bg-rose-500 text-white shadow-lg shadow-rose-500/20';
-                  else if (state === 'attempted') bgColor = 'bg-blue-500 text-white shadow-lg shadow-blue-500/20';
+                  let bgColor = 'bg-slate-800 text-slate-400 hover:bg-slate-700 border-white/5 hover:text-white';
+                  if (state === 'correct') bgColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 hover:bg-emerald-500/30';
+                  else if (state === 'incorrect') bgColor = 'bg-rose-500/20 text-rose-400 border-rose-500/50 hover:bg-rose-500/30';
+                  else if (state === 'attempted') bgColor = 'bg-blue-500/20 text-blue-400 border-blue-500/50 hover:bg-blue-500/30';
                   
                   return (
                     <button
                       key={q.id}
                       onClick={() => {
-                        setCurrentIndex(idx);
-                        setShowPalette(false);
+                         setCurrentIndex(idx);
+                         setShowPalette(false);
                       }}
-                      className={`relative aspect-square rounded-xl font-bold text-sm flex items-center justify-center transition-all hover:scale-105 ${bgColor} ${isCurrent ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900' : ''}`}
+                      className={`relative aspect-square rounded-full font-bold text-sm md:text-base flex items-center justify-center transition-all border ${bgColor} ${isCurrent ? 'ring-4 ring-brand/30 border-brand text-white' : ''} ${state === 'unvisited' && isCurrent ? 'bg-brand text-white border-brand' : ''}`}
                     >
                       {idx + 1}
                       {isBookmarked && (
-                        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-yellow-500 rounded-full border-2 border-slate-900" />
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full border-2 border-slate-900 flex items-center justify-center shadow-sm">
+                          <Bookmark size={8} className="text-slate-900 fill-slate-900" />
+                        </div>
                       )}
                     </button>
                   );
                 })}
-              </div>
-              
-              <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-slate-400 bg-slate-800/50 p-4 rounded-xl">
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-slate-800 border border-white/10"></div> Not Visited</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-emerald-500"></div> Correct</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-rose-500"></div> Incorrect</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-yellow-500"></div> Bookmarked</div>
               </div>
             </motion.div>
           </div>

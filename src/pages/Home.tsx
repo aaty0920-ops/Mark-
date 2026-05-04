@@ -27,7 +27,14 @@ import {
   Thermometer,
   Grid,
   GraduationCap,
-  Dna
+  Dna,
+  Share2,
+  Star,
+  Youtube,
+  Instagram,
+  Twitter,
+  Send,
+  Bookmark
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import Sidebar from '../components/Sidebar';
@@ -140,15 +147,15 @@ const Home = () => {
   }, [field, activeTab]);
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white pb-24 font-kanit">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-white pb-24 font-kanit">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
       {/* Header */}
-      <header className="px-6 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-[#0f172a]/80 backdrop-blur-lg z-40">
+      <header className="px-6 pt-8 pb-4 flex items-center justify-between sticky top-0 bg-slate-50/80 dark:bg-[#0f172a]/80 backdrop-blur-lg z-40">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsSidebarOpen(true)}
-            className="w-12 h-12 rounded-full border-2 border-brand p-0.5 overflow-hidden focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-[#0f172a]"
+            className="w-12 h-12 rounded-full border-2 border-brand p-0.5 overflow-hidden focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-[#0f172a]"
           >
             <img 
               src={profilePic || `https://picsum.photos/seed/${user?.uid || 'user'}/100/100`}
@@ -472,12 +479,12 @@ const Home = () => {
               <div className="relative z-10 flex items-center justify-between">
                 <div className="pr-4 tracking-wide flex-1">
                   <div className="flex items-center justify-between mb-2">
-                     <h3 className="font-bold text-lg text-white group-hover:text-orange-400 transition-colors tracking-tight">Solve DPPs</h3>
-                     <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px] font-black rounded-lg uppercase shadow-[0_0_10px_rgba(249,115,22,0.3)]">DAILY</span>
+                     <h3 className="font-bold text-lg text-white group-hover:text-brand transition-colors tracking-tight">Solve DPPs</h3>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed mb-3">554+ aspirants solved Daily Practice Problems in the last 1 hr! 🔥</p>
+                  <p className="text-xs text-slate-300 leading-relaxed font-bold tracking-tight mb-1 text-white">Structured Daily Practice</p>
+                  <p className="text-[11px] text-slate-300 mb-3">700+ curated problems by expert educators.</p>
                 </div>
-                <div className="shrink-0 w-12 h-12 bg-gradient-to-br from-orange-400 to-red-600 rounded-[1rem] flex items-center justify-center text-white shadow-lg shadow-orange-500/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 ml-4">
+                <div className="shrink-0 w-12 h-12 bg-gradient-to-br from-brand to-brand-100/50 rounded-[1rem] flex items-center justify-center text-white shadow-lg shadow-brand/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 ml-4">
                   <Flame size={24} />
                 </div>
               </div>
@@ -568,6 +575,71 @@ const Home = () => {
                 </motion.div>
               </Link>
             ))}
+          </div>
+        </section>
+
+        {/* Social interactions */}
+        <section className="mt-8 space-y-8 pb-10">
+          {/* Study with your friends */}
+          <div className="bg-slate-800/80 p-5 rounded-3xl border border-white/5 relative overflow-hidden">
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand/20 blur-3xl rounded-full" />
+            <div className="flex justify-between items-start mb-2 relative z-10">
+              <h3 className="text-[22px] font-bold">Study with your friends</h3>
+              <button className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors cursor-pointer active:scale-95 text-slate-300">
+                <Share2 size={20} />
+              </button>
+            </div>
+            <p className="text-[15px] text-slate-300 mb-6 relative z-10 max-w-[85%] leading-relaxed">
+              Invite your friends to Marks app<br/>to learn together
+            </p>
+            <button className="w-full py-4 text-[15px] bg-white text-slate-900 font-bold rounded-[14px] hover:bg-slate-100 transition-colors relative z-10 shadow-lg shadow-white/10 active:scale-[0.98]">
+              Invite Friends
+            </button>
+          </div>
+
+          {/* Enjoying MARKS? */}
+          <div className="text-center py-6">
+            <h3 className="text-2xl font-bold mb-3">Enjoying MARKS?</h3>
+            <p className="text-base text-slate-300 mb-8 max-w-[300px] mx-auto leading-relaxed">
+              Take a minute to provide your review and rating on the Play Store.
+            </p>
+            <div className="flex justify-center gap-2 mb-6">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button key={star} className="text-[#fca311] hover:scale-110 transition-transform active:scale-95 p-1">
+                  <Star size={42} className={star === 5 ? 'fill-transparent' : 'fill-transparent'} strokeWidth={1.5} />
+                </button>
+              ))}
+            </div>
+            <button className="text-[17px] font-bold text-white hover:text-slate-200 transition-colors">
+              I have already rated
+            </button>
+          </div>
+
+          {/* We're on Social Media */}
+          <div>
+            <h3 className="text-[22px] font-bold mb-3">We're on Social Media</h3>
+            <p className="text-[15px] text-slate-300 mb-6 leading-relaxed">
+              Follow us & share with your friends. It motivates us to keep working hard for you to bring new features & keep the app FREE.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3.5">
+              <a href="#" className="flex items-center gap-3.5 bg-slate-800 p-4 rounded-xl border border-white/5 hover:bg-slate-700 transition-colors active:scale-[0.98]">
+                <Youtube size={26} className="text-[#ff0000]" />
+                <span className="font-bold text-[17px]">Youtube</span>
+              </a>
+              <a href="#" className="flex items-center gap-3.5 bg-slate-800 p-4 rounded-xl border border-white/5 hover:bg-slate-700 transition-colors active:scale-[0.98]">
+                <Instagram size={26} className="text-[#e1306c]" />
+                <span className="font-bold text-[17px]">Instagram</span>
+              </a>
+              <a href="#" className="flex items-center gap-3.5 bg-slate-800 p-4 rounded-xl border border-white/5 hover:bg-slate-700 transition-colors active:scale-[0.98]">
+                <Send size={26} className="text-[#2aabee] -rotate-12" />
+                <span className="font-bold text-[17px]">Telegram</span>
+              </a>
+              <a href="#" className="flex items-center gap-3.5 bg-slate-800 p-4 rounded-xl border border-white/5 hover:bg-slate-700 transition-colors active:scale-[0.98]">
+                <Twitter size={26} className="text-[#1da1f2]" fill="currentColor" />
+                <span className="font-bold text-[17px]">Twitter</span>
+              </a>
+            </div>
           </div>
         </section>
 

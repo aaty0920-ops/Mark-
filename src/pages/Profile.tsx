@@ -1,22 +1,140 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Settings, Shield, Bell, LogOut, ChevronRight, Star, ArrowLeft, CheckCircle2, Smartphone, Monitor, Globe, Trash2, X, Camera, TrendingUp } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { User, Settings, Shield, Bell, LogOut, ChevronRight, Star, ArrowLeft, CheckCircle2, Smartphone, Monitor, Globe, Trash2, X, Camera, TrendingUp, BookOpen, AlertCircle } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useUser, handleFirestoreError, OperationType } from '../context/UserContext';
 import { db } from '../firebase';
 import { collection, query, getDocs } from 'firebase/firestore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+const ExamUpdatesView = () => {
+  const { field } = useUser();
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  const updates = [
+    { 
+      title: 'JEE Main 2026 Session 1 Registration', 
+      date: 'Upcoming', 
+      label: 'Important', 
+      isNew: true,
+      target: 'Engineering',
+      details: 'The National Testing Agency (NTA) will soon release the notification for JEE Main 2026 Session 1. Expected registration to start in November 2025. Keep your documents like Aadhaar, category certificate, and photographs ready.',
+      link: 'https://jeemain.nta.ac.in/'
+    },
+    { 
+      title: 'CBSE Class 12 Syllabus Update', 
+      date: '2 days ago', 
+      label: 'Syllabus', 
+      isNew: true,
+      target: 'Both',
+      details: 'CBSE has released the updated rationalized syllabus for the academic year 2025-26. Check the official website for subject-wise curriculum changes, marking schemes, and deleted topics.',
+      link: 'https://cbseacademic.nic.in/'
+    },
+    { 
+      title: 'NEET UG 2025 Correction Window', 
+      date: '1 week ago', 
+      label: 'Updates', 
+      isNew: false,
+      target: 'Medical',
+      details: 'The correction window for NEET UG 2025 application form is now open. Candidates can edit their details such as exam city preference, category, and uploaded documents for a limited time.',
+      link: 'https://neet.nta.nic.in/'
+    },
+    { 
+      title: 'JEE Main Advanced Information Brochure', 
+      date: '2 weeks ago', 
+      label: 'Important', 
+      isNew: false,
+      target: 'Engineering',
+      details: 'IIT Kanpur has released the information brochure for JEE Advanced 2025. Read through the eligibility criteria, changes in the syllabus (if any), and registration timeline.',
+      link: 'https://jeeadv.ac.in/'
+    }
+  ].filter(u => u.target === 'Both' || u.target === field || (field !== 'Medical' && field !== 'Engineering'));
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-5 mb-6 text-center">
+        <AlertCircle size={32} className="text-purple-500 mx-auto mb-3" />
+        <h3 className="text-lg font-bold text-white mb-2">Stay Updated</h3>
+        <p className="text-sm text-slate-400">Get the latest notifications, syllabus changes, and form dates for your target exams right here.</p>
+      </div>
+      
+      <div className="space-y-3">
+        {updates.map((update, i) => {
+          const isExpanded = expandedIndex === i;
+          return (
+            <motion.div 
+              key={i} 
+              layout
+              onClick={() => setExpandedIndex(isExpanded ? null : i)}
+              className="bg-slate-800/50 p-4 rounded-2xl border border-white/5 flex flex-col gap-2 cursor-pointer hover:bg-slate-800 transition-colors"
+            >
+              <div className="flex justify-between items-start gap-4">
+                <h4 className="font-bold text-sm text-slate-200">{update.title}</h4>
+                {update.isNew && (
+                  <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 text-[10px] font-bold tracking-wider uppercase shrink-0">
+                    New
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between items-center mt-1">
+                <span className="text-[11px] font-bold text-slate-500 uppercase">{update.label}</span>
+                <span className="text-[11px] text-slate-400">{update.date}</span>
+              </div>
+              
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-3 mt-3 border-t border-slate-700/50 flex flex-col gap-3">
+                      <p className="text-sm text-slate-300 leading-relaxed">
+                        {update.details}
+                      </p>
+                      
+                      <a 
+                        href={update.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-semibold py-2 px-4 rounded-xl transition-colors"
+                      >
+                        <Globe size={16} />
+                        Visit Official Website
+                      </a>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const Profile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { pointsEarned, userRank, streak, user, logout, theme, setTheme, notifications, setNotifications, profilePic, setProfilePic, activityHistory, dailyGoal } = useUser();
-  const [activeView, setActiveView] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<string | null>(location.state?.activeView || null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [activityData, setActivityData] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showProfilePicOptions, setShowProfilePicOptions] = useState(false);
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.activeView) {
+      setActiveView(location.state.activeView);
+      // Consume state so it does not persist across back/forward navigation
+      navigate('.', { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const AVATAR_SEEDS = ['Felix', 'Aneka', 'Mimi', 'Jack', 'Oliver', 'Sophie', 'Leo', 'Mia', 'Max', 'Luna', 'Charlie', 'Bella'];
 
@@ -189,6 +307,7 @@ const Profile = () => {
 
   const menuItems = [
     { id: 'personal', icon: <User size={20} />, label: 'Personal Info', color: 'text-blue-500' },
+    { id: 'exam_updates', icon: <BookOpen size={20} />, label: 'Exam Updates', color: 'text-purple-500' },
     { id: 'notifications', icon: <Bell size={20} />, label: 'Notifications', color: 'text-orange-500' },
     { id: 'settings', icon: <Settings size={20} />, label: 'Settings', color: 'text-slate-400' },
   ];
@@ -282,6 +401,8 @@ const Profile = () => {
             </button>
           </div>
         );
+      case 'exam_updates':
+        return <ExamUpdatesView />;
       case 'notifications':
         return (
           <div className="space-y-4">
@@ -478,7 +599,7 @@ const Profile = () => {
                 </div>
 
                 <div className="h-48 w-full mt-4 -ml-4 relative z-10">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                     <AreaChart data={activityData.filter(d => d.pointsEarned > 0 || d.day > new Date().getDate() - 14)}>
                       <defs>
                         <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">

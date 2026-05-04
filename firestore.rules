@@ -12,6 +12,7 @@ service cloud.firestore {
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
     function isSignedIn() { return request.auth != null; }
+    function isAuthenticated() { return request.auth != null; }
     function isAdmin() { 
       return isSignedIn() && (
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||

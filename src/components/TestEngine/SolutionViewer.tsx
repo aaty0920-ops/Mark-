@@ -82,7 +82,10 @@ const SolutionViewer: React.FC<SolutionViewerProps> = ({ results, onBack }) => {
   const solutionTags = ['Detailed Method', 'Short Trick', 'Formula Based', 'Elimination'];
 
   React.useEffect(() => {
-    if (!currentQuestion?.id) return;
+    if (!currentQuestion?.id || !user || user.uid === 'demo') {
+      setLoadingSolutions(false);
+      return;
+    }
     
     setLoadingSolutions(true);
     const q = query(

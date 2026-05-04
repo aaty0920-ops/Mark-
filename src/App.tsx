@@ -31,8 +31,8 @@ function AppLayout() {
   const isAppRoute = location.pathname.startsWith('/app');
 
   return (
-    <div className={`min-h-screen font-sans ${isAppRoute ? 'bg-[#0F172A]' : 'bg-gray-50'}`}>
-      <Toaster theme="dark" position="top-center" />
+    <div className={`min-h-screen font-sans ${isAppRoute ? 'bg-slate-50 dark:bg-[#0F172A]' : 'bg-gray-50 dark:bg-slate-900'} text-slate-900 dark:text-white transition-colors duration-200`}>
+      <Toaster theme="system" position="top-center" />
       <Outlet />
       {isAppRoute && <BottomNav />}
     </div>

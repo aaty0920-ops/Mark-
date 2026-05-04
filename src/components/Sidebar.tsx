@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, Settings, Moon, ChevronDown, X, Check, Calculator, Dna, ChevronRight } from 'lucide-react';
+import { Bell, Settings, Moon, Sun, ChevronDown, X, Check, Calculator, Dna, ChevronRight, BookOpen } from 'lucide-react';
 import { useUser } from '../context/UserContext';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -10,10 +10,11 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { user, profilePic, field, setField } = useUser();
+  const { user, profilePic, field, setField, theme, setTheme } = useUser();
+  const navigate = useNavigate();
   const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
   const [tempField, setTempField] = useState(field);
-  const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const isDarkTheme = theme === 'dark' || theme === 'system';
 
   useEffect(() => {
     setTempField(field);
@@ -84,7 +85,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
             {/* Menu Items */}
             <div className="flex-1 px-4 py-2 space-y-1">
-              <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-slate-800/50 transition-colors text-white">
+              <button 
+                onClick={() => {
+                  onClose();
+                  navigate('/app/profile', { state: { activeView: 'notifications' } });
+                }}
+                className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-slate-800/50 transition-colors text-white"
+              >
                 <div className="flex items-center gap-4">
                   <Bell size={22} className="text-slate-300" />
                   <span className="text-lg font-medium">Notification</span>
@@ -92,7 +99,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <ChevronRight size={20} className="text-slate-500" />
               </button>
 
-              <button className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-slate-800/50 transition-colors text-white">
+              <button 
+                onClick={() => {
+                  setTheme(isDarkTheme ? 'light' : 'dark');
+                }}
+                className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-slate-800/50 transition-colors text-white"
+              >
+                <div className="flex items-center gap-4">
+                  {isDarkTheme ? <Sun size={22} className="text-slate-300" /> : <Moon size={22} className="text-slate-300" />}
+                  <span className="text-lg font-medium">{isDarkTheme ? 'Light Mode' : 'Dark Mode'}</span>
+                </div>
+              </button>
+
+              <button 
+                onClick={() => {
+                  onClose();
+                  navigate('/app/profile', { state: { activeView: 'settings' } });
+                }}
+                className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-slate-800/50 transition-colors text-white"
+              >
                 <div className="flex items-center gap-4">
                   <Settings size={22} className="text-slate-300" />
                   <span className="text-lg font-medium">Settings</span>
@@ -100,23 +125,33 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <ChevronRight size={20} className="text-slate-500" />
               </button>
 
-              <div className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-slate-800/50 transition-colors text-white">
+              <button 
+                onClick={() => {
+                  onClose();
+                  navigate('/app/profile', { state: { activeView: 'exam_updates' } });
+                }}
+                className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-slate-800/50 transition-colors text-white"
+              >
                 <div className="flex items-center gap-4">
-                  <Moon size={22} className="text-slate-300" />
-                  <span className="text-lg font-medium">Dark theme</span>
+                  <div className="relative">
+                    <BookOpen size={22} className="text-slate-300" />
+                    {(() => {
+                      const newUpdatesCount = [
+                        { isNew: true, target: 'Engineering' },
+                        { isNew: true, target: 'Both' },
+                        { isNew: false, target: 'Medical' },
+                        { isNew: false, target: 'Engineering' }
+                      ].filter(u => u.isNew && (u.target === 'Both' || u.target === field || (field !== 'Medical' && field !== 'Engineering'))).length;
+                      
+                      return newUpdatesCount > 0 ? (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-[#1e293b]"></div>
+                      ) : null;
+                    })()}
+                  </div>
+                  <span className="text-lg font-medium">Exam updates</span>
                 </div>
-                {/* Toggle Switch */}
-                <button 
-                  onClick={() => setIsDarkTheme(!isDarkTheme)}
-                  className={`w-12 h-6 rounded-full relative transition-colors ${isDarkTheme ? 'bg-blue-500' : 'bg-slate-600'}`}
-                >
-                  <motion.div 
-                    className="w-5 h-5 bg-white rounded-full absolute top-0.5 shadow-sm"
-                    animate={{ left: isDarkTheme ? '26px' : '2px' }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                </button>
-              </div>
+                <ChevronRight size={20} className="text-slate-500" />
+              </button>
             </div>
 
             {/* Footer */}

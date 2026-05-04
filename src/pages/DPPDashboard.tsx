@@ -81,34 +81,26 @@ export default function DPPDashboard() {
   }, [selectedSubject, examData]);
 
   const renderSubjectSelection = () => (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-12">
-      {/* Premium Header */}
-      <div className="bg-white px-6 py-6 pt-10 sticky top-0 z-40 border-b border-slate-200/60 shadow-sm backdrop-blur-xl bg-white/80">
-        <div className="flex items-center gap-4 mb-4">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white pb-12 transition-colors duration-200">
+      {/* Header */}
+      <div className="px-6 py-6 pt-10 sticky top-0 z-40 border-b border-slate-200/60 dark:border-white/5 shadow-sm backdrop-blur-xl bg-slate-50/80 dark:bg-slate-900/80">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-800 flex items-center gap-3 font-serif">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
             Solve DPPs
-            <span className="bg-amber-100/50 text-amber-700 text-[10px] px-2.5 py-1 rounded border border-amber-200/50 flex items-center gap-1 font-bold tracking-widest uppercase shadow-sm">
-              <Bookmark size={10} className="fill-amber-600/20" /> Premium
-            </span>
           </h1>
         </div>
-        
-        <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest pl-[40px] flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
-          <strong className="text-brand">656+</strong> active sessions today
-        </p>
       </div>
 
       <div className="px-6 mt-6">
         {/* Banner */}
-        <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 mb-8 text-center shadow-sm">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
-          <p className="relative z-10 text-slate-500 font-medium text-sm leading-relaxed tracking-wide">
-            <span className="text-slate-800 font-bold tracking-tight">Structured Daily Practice</span><br/>700+ curated problems by expert educators.
+        <div className="relative overflow-hidden rounded-[2rem] border border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-800 p-6 mb-8 text-center shadow-md">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+          <p className="relative z-10 text-slate-600 dark:text-slate-300 font-medium text-sm leading-relaxed tracking-wide">
+            <span className="text-slate-900 dark:text-white font-bold tracking-tight">Structured Daily Practice</span><br/>700+ curated problems by expert educators.
           </p>
         </div>
 
@@ -116,28 +108,33 @@ export default function DPPDashboard() {
           {(Object.keys(examData) as SubjectType[]).map(subject => {
             const style = subjectStyles[subject as keyof typeof subjectStyles];
             const Icon = style?.icon || Atom;
-            const chaptersCount = examData[subject]?.length || 0;
+            
+            // Default chaptersCount to actual data if available, but hardcode the ones requested
+            let chaptersCount = examData[subject as keyof typeof examData]?.length || 0;
+            if (subject === 'Physics') chaptersCount = 26;
+            if (subject === 'Chemistry') chaptersCount = 28;
+            if (subject === 'Mathematics') chaptersCount = 22;
 
             return (
               <motion.div
                 key={subject}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedSubject(subject)}
-                className="relative overflow-hidden rounded-[2rem] border border-slate-200/60 bg-white cursor-pointer flex items-stretch min-h-[120px] group transition-all duration-300 hover:shadow-xl hover:border-slate-300 shadow-sm"
+                className="relative overflow-hidden rounded-[2rem] border border-white/5 bg-slate-800 cursor-pointer flex items-stretch min-h-[120px] group transition-all duration-300 hover:shadow-xl hover:border-white/10 shadow-sm"
               >
                 <div className={`absolute inset-0 bg-gradient-to-r ${style.bg} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                 
                 <div className="flex-1 p-6 z-10 flex flex-col justify-center">
-                  <h2 className="text-2xl font-bold tracking-tight mb-1 flex items-center gap-2 text-slate-800">
-                    {subject} <ChevronRight size={20} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-slate-400" />
+                  <h2 className="text-2xl font-bold tracking-tight mb-1 flex items-center gap-2 text-white/90">
+                    {subject} <ChevronRight size={20} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-slate-500" />
                   </h2>
                   <div className="flex items-center gap-2">
-                     <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                     <span className="w-1 h-1 rounded-full bg-slate-600"></span>
                      <p className="text-xs font-semibold text-slate-400 tracking-widest uppercase">{chaptersCount} Modules</p>
                   </div>
                 </div>
-                <div className={`w-32 bg-slate-50 relative overflow-hidden flex items-center justify-center border-l border-slate-100`}>
-                  <div className={`w-14 h-14 rounded-[1.25rem] bg-white border border-slate-200 flex items-center justify-center ${style.color} shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}>
+                <div className={`w-32 bg-slate-900/50 relative overflow-hidden flex items-center justify-center border-l border-white/5`}>
+                  <div className={`w-14 h-14 rounded-[1.25rem] bg-slate-800 border border-white/5 flex items-center justify-center ${style.color} shadow-sm relative z-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}>
                     <Icon size={28} strokeWidth={1.5} />
                   </div>
                 </div>
@@ -160,42 +157,42 @@ export default function DPPDashboard() {
     });
 
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col relative overflow-hidden pb-12">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white flex flex-col relative overflow-hidden pb-12 transition-colors duration-200">
         {/* Superior Background Accent */}
-        <div className={`absolute top-0 left-0 w-full h-80 ${style?.bg || 'bg-slate-100'} opacity-40 blur-[120px] pointer-events-none`} />
+        <div className={`absolute top-0 left-0 w-full h-80 ${style?.bg || 'bg-slate-800'} opacity-30 blur-[120px] pointer-events-none`} />
 
-        {/* Premium Context Header */}
-        <div className="px-6 py-6 pt-10 sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
+        {/* Header */}
+        <div className="px-6 py-6 pt-10 sticky top-0 z-40 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/5 shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-4">
-              <button onClick={() => setSelectedSubject(null)} className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all shadow-sm">
+              <button onClick={() => setSelectedSubject(null)} className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm">
                 <ArrowLeft size={20} strokeWidth={2.5} />
               </button>
-              <div className={`w-12 h-12 rounded-[1rem] bg-white border border-slate-200 ${style?.color || 'text-slate-700'} flex items-center justify-center shadow-sm`}>
+              <div className={`w-12 h-12 rounded-[1rem] bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 ${style?.color || 'text-slate-900 dark:text-white'} flex items-center justify-center shadow-sm`}>
                 <Icon size={24} strokeWidth={1.5} />
               </div>
             </div>
-            <button className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 shadow-sm transition-all focus:ring-2 focus:ring-brand focus:outline-none">
+            <button className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm transition-all focus:ring-2 focus:ring-brand focus:outline-none">
               <Search size={18} strokeWidth={2.5} />
             </button>
           </div>
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-800 font-serif mb-2">{selectedSubject}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">{selectedSubject}</h1>
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">{currentChapters.length} Modules • 8 Completed</p>
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{currentChapters.length} Modules • 8 Completed</p>
             </div>
           </div>
         </div>
 
         {/* Filters Carousel */}
-        <div className="px-6 py-4 flex gap-3 overflow-x-auto no-scrollbar relative z-10 border-b border-slate-100 bg-white/30 backdrop-blur-sm">
+        <div className="px-6 py-4 flex gap-3 overflow-x-auto no-scrollbar relative z-10 border-b border-white/5 bg-slate-900/30 backdrop-blur-sm">
           <button 
             onClick={() => setShowFilterModal(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold whitespace-nowrap shadow-sm hover:border-slate-300 transition-all relative text-slate-600"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/5 bg-slate-800 text-xs font-semibold whitespace-nowrap shadow-sm hover:border-white/10 transition-all relative text-slate-300"
           >
             {selectedImportance.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand rounded-full border-2 border-white" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand rounded-full border-2 border-slate-900" />
             )}
             <SlidersHorizontal size={14} strokeWidth={2.5} /> Filter
           </button>
@@ -214,8 +211,8 @@ export default function DPPDashboard() {
                 }}
                 className={`px-5 py-2.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition-all shadow-sm ${
                   isActive 
-                    ? 'bg-slate-800 text-white border-slate-800' 
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                    ? 'bg-brand text-white border-brand' 
+                    : 'border-white/5 bg-slate-800 text-slate-300 hover:bg-slate-700'
                 }`}
               >
                 {cls}
@@ -227,12 +224,12 @@ export default function DPPDashboard() {
         {/* Sort Bar */}
         <div className="px-6 py-5 relative z-10">
           <div className="flex items-center justify-between">
-            <span className="bg-slate-100 px-3 py-1 rounded inline-flex border border-slate-200">
-               <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
+            <span className="bg-slate-800 px-3 py-1 rounded inline-flex border border-white/5">
+               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                  {selectedClass === 'All' ? 'Combined Chapters' : `${selectedClass} Chapters`} ({filteredChapters.length})
                </span>
             </span>
-            <button className="flex items-center gap-1.5 text-[11px] text-brand font-semibold uppercase tracking-wider hover:text-blue-700 transition-colors bg-brand/5 px-2 py-1 rounded">
+            <button className="flex items-center gap-1.5 text-[11px] text-brand font-semibold uppercase tracking-wider hover:text-brand-light transition-colors bg-brand/10 px-2 py-1 rounded">
               <ArrowUpDown size={12} strokeWidth={2.5} /> Sort
             </button>
           </div>
@@ -241,18 +238,18 @@ export default function DPPDashboard() {
         {/* Chapter List */}
         <div className="flex-1 overflow-y-auto px-6 space-y-4 relative z-10 custom-scrollbar">
           {filteredChapters.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-[2rem] border border-dashed border-slate-300 shadow-sm">
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                 <Search size={24} className="text-slate-300" />
+            <div className="text-center py-16 bg-slate-800 rounded-[2rem] border border-dashed border-white/10 shadow-sm">
+              <div className="w-16 h-16 bg-slate-900/50 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/5">
+                 <Search size={24} className="text-slate-500" />
               </div>
-              <p className="font-semibold text-lg text-slate-700 mb-1">No modules found</p>
-              <p className="text-sm text-slate-500 mb-6 px-8">Expand your filters to see more results.</p>
+              <p className="font-semibold text-lg text-white mb-1">No modules found</p>
+              <p className="text-sm text-slate-400 mb-6 px-8">Expand your filters to see more results.</p>
               <button 
                 onClick={() => {
                   setSelectedClass('All');
                   setSelectedImportance([]);
                 }}
-                className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 font-semibold text-sm rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
+                className="px-6 py-2.5 bg-slate-800 border border-white/5 text-slate-300 font-semibold text-sm rounded-lg shadow-sm hover:bg-slate-700 hover:text-white transition-colors"
               >
                 Clear All Filters
               </button>
@@ -264,39 +261,39 @@ export default function DPPDashboard() {
               
               // Determine progress background color based on attempt percentage
               const progressPercentage = (chapter.attempted / chapter.total) * 100;
-              const progressColor = progressPercentage === 0 ? 'bg-slate-200' : progressPercentage === 100 ? 'bg-emerald-500' : 'bg-brand';
+              const progressColor = progressPercentage === 0 ? 'bg-slate-700' : progressPercentage === 100 ? 'bg-emerald-500' : 'bg-brand';
 
               return (
                 <motion.div
                   key={idx}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate(`/app/dpp/chapter/${selectedSubject}/${chapter.id}`, { state: { chapterName: chapter.name } })}
-                  className="bg-white border border-slate-200/80 rounded-[1.5rem] p-5 cursor-pointer hover:border-slate-300 hover:shadow-md transition-all group flex flex-col gap-4 shadow-sm"
+                  className="bg-slate-800 border border-white/5 rounded-[1.5rem] p-5 cursor-pointer hover:border-white/10 hover:shadow-md transition-all group flex flex-col gap-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex flex-1 items-start gap-4">
-                      <div className={`w-12 h-12 rounded-[1rem] bg-slate-50 border border-slate-100 flex items-center justify-center shadow-sm group-hover:bg-white group-hover:border-slate-200 transition-colors shrink-0 ${chColor}`}>
+                      <div className={`w-12 h-12 rounded-[1rem] bg-slate-900/50 border border-white/5 flex items-center justify-center shadow-sm group-hover:bg-slate-700 transition-colors shrink-0 ${chColor}`}>
                         <ChIcon size={24} strokeWidth={1.5} />
                       </div>
                       <div className="pt-1">
-                        <h3 className="font-semibold text-slate-800 text-base leading-tight group-hover:text-brand transition-colors mb-2 tracking-tight">{chapter.name}</h3>
+                        <h3 className="font-semibold text-white/90 text-base leading-tight group-hover:text-brand transition-colors mb-2 tracking-tight">{chapter.name}</h3>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase tracking-widest">{chapter.class}</span>
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-slate-200 text-slate-400 capitalize tracking-wide">{chapter.importance.toLowerCase()}</span>
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-700 text-slate-300 uppercase tracking-widest">{chapter.class}</span>
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-white/5 text-slate-400 capitalize tracking-wide">{chapter.importance.toLowerCase()}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 text-slate-400 border border-slate-100 group-hover:bg-brand group-hover:text-white group-hover:border-brand transition-all shrink-0">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-900/50 text-slate-500 border border-white/5 group-hover:bg-brand group-hover:text-white group-hover:border-brand transition-all shrink-0">
                        <ChevronRight size={16} strokeWidth={2.5} />
                     </div>
                   </div>
                   
-                  <div className="bg-slate-50 rounded-xl p-3 flex flex-col gap-2 border border-slate-100/50 mt-1">
+                  <div className="bg-slate-900/50 rounded-xl p-3 flex flex-col gap-2 border border-white/5 mt-1">
                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider pl-1">Progress</span>
-                        <span className="text-[11px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded shadow-sm border border-slate-100">{chapter.attempted} <span className="opacity-50">/</span> {chapter.total}</span>
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider pl-1">Progress</span>
+                        <span className="text-[11px] font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded shadow-sm border border-white/5">{chapter.attempted} <span className="opacity-50">/</span> {chapter.total}</span>
                      </div>
-                     <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                     <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
                        <div className={`h-full ${progressColor} rounded-full transition-all duration-700 ease-out`} style={{ width: `${progressPercentage}%` }} />
                      </div>
                   </div>
