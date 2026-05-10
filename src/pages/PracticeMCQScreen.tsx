@@ -1,16 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  ChevronLeft, ChevronRight, CheckCircle2, XCircle, PenTool, ArrowLeft,
-  Bookmark, AlertTriangle, MoreVertical, ThumbsUp, ThumbsDown, MessageSquare,
-  LayoutGrid, X, User, Clock, Send, Flag, Share2, BadgeCheck, Tag, Image as ImageIcon, Search,
-  Trophy, MinusCircle
-} from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import Scratchpad from '../components/Scratchpad';
-import { useUser } from '../context/UserContext';
-import { db, handleFirestoreError } from '../firebase';
-import { collection, query, where, onSnapshot, doc, setDoc, updateDoc, increment, getDocs, deleteDoc, getDoc, addDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from"react";
+import { motion, AnimatePresence } from"motion/react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  XCircle,
+  PenTool,
+  ArrowLeft,
+  Bookmark,
+  AlertTriangle,
+  MoreVertical,
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare,
+  LayoutGrid,
+  X,
+  User,
+  Clock,
+  Send,
+  Flag,
+  Share2,
+  BadgeCheck,
+  Tag,
+  Image as ImageIcon,
+  Search,
+  Trophy,
+  MinusCircle,
+  PauseCircle,
+} from "lucide-react";
+import { useNavigate, useLocation } from"react-router-dom";
+import Scratchpad from"../components/Scratchpad";
+import { useUser } from"../context/UserContext";
+import { db, handleFirestoreError } from"../firebase";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  setDoc,
+  updateDoc,
+  increment,
+  getDocs,
+  deleteDoc,
+  getDoc,
+  addDoc,
+} from"firebase/firestore";
 
 type CommunitySolution = {
   id: string;
@@ -23,7 +58,7 @@ type Question = {
   id: number;
   subject: string;
   chapter: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+  difficulty:"Easy" |"Medium" |"Hard";
   text: string;
   options: string[];
   correctAnswer: number;
@@ -34,147 +69,169 @@ type Question = {
 const MOCK_QUESTIONS: Question[] = [
   {
     id: 100,
-    subject: 'Physics',
-    chapter: 'Laws of Motion',
-    difficulty: 'Medium',
-    text: 'A block of mass m is placed on a smooth inclined plane of inclination θ. The inclined plane is accelerated horizontally so that the block does not slip. What is the acceleration?',
-    options: ['g sin θ', 'g tan θ', 'g cos θ', 'g cot θ'],
+    subject:"Physics",
+    chapter:"Laws of Motion",
+    difficulty:"Medium",
+    text:"A block of mass m is placed on a smooth inclined plane of inclination θ. The inclined plane is accelerated horizontally so that the block does not slip. What is the acceleration?",
+    options: ["g sin θ","g tan θ","g cos θ","g cot θ"],
     correctAnswer: 1,
-    solution: 'For the block to not slip, the pseudo force (ma) must balance the component of weight along the incline.\n\nma cos θ = mg sin θ\n\na = g tan θ',
-    communitySolutions: []
+    solution:"For the block to not slip, the pseudo force (ma) must balance the component of weight along the incline.\n\nma cos θ = mg sin θ\n\na = g tan θ",
+    communitySolutions: [],
   },
   {
     id: 101,
-    subject: 'Physics',
-    chapter: 'Electrostatics',
-    difficulty: 'Medium',
-    text: 'A charge q is placed at the center of a cube. Find the electric flux through one face.',
-    options: ['q / 6ε₀', 'q / ε₀', 'q / 4ε₀', 'q / 2ε₀'],
+    subject:"Physics",
+    chapter:"Electrostatics",
+    difficulty:"Medium",
+    text:"A charge q is placed at the center of a cube. Find the electric flux through one face.",
+    options: ["q / 6ε₀","q / ε₀","q / 4ε₀","q / 2ε₀"],
     correctAnswer: 0,
-    solution: 'Step 1: Apply Gauss Law. According to Gauss Law, the total electric flux through a closed surface is equal to the total charge enclosed divided by the permittivity of free space (ε₀).\n\nStep 2: Total flux = q/ε₀.\n\nStep 3: A cube has 6 identical faces, and the charge is at the center, so the flux is distributed equally among all 6 faces.\n\nStep 4: Flux through one face = (1/6) * (q/ε₀) = q / 6ε₀.',
+    solution:"Step 1: Apply Gauss Law. According to Gauss Law, the total electric flux through a closed surface is equal to the total charge enclosed divided by the permittivity of free space (ε₀).\n\nStep 2: Total flux = q/ε₀.\n\nStep 3: A cube has 6 identical faces, and the charge is at the center, so the flux is distributed equally among all 6 faces.\n\nStep 4: Flux through one face = (1/6) * (q/ε₀) = q / 6ε₀.",
     communitySolutions: [
       {
-        id: 'cs1',
-        userName: 'Rahul Sharma',
+        id:"cs1",
+        userName:"Rahul Sharma",
         upvotes: 45,
-        text: 'Using Gauss theorem the total flux is q/ε₀. Since the cube is symmetric and has 6 faces, flux through one face is simply a sixth of the total.'
+        text:"Using Gauss theorem the total flux is q/ε₀. Since the cube is symmetric and has 6 faces, flux through one face is simply a sixth of the total.",
       },
       {
-        id: 'cs2',
-        userName: 'Priya Patel',
+        id:"cs2",
+        userName:"Priya Patel",
         upvotes: 12,
-        text: 'Just remember: Center of cube = q/6ε₀. Corner of cube = q/24ε₀. Face center = q/2ε₀. Edge center = q/12ε₀.'
-      }
-    ]
+        text:"Just remember: Center of cube = q/6ε₀. Corner of cube = q/24ε₀. Face center = q/2ε₀. Edge center = q/12ε₀.",
+      },
+    ],
   },
   {
     id: 102,
-    subject: 'Physics',
-    chapter: 'Kinematics',
-    difficulty: 'Hard',
-    text: 'A particle is moving in a circle of radius R with constant speed v. The magnitude of average acceleration after half revolution is:',
-    options: ['v² / R', '2v² / πR', 'v² / πR', 'Zero'],
+    subject:"Physics",
+    chapter:"Kinematics",
+    difficulty:"Hard",
+    text:"A particle is moving in a circle of radius R with constant speed v. The magnitude of average acceleration after half revolution is:",
+    options: ["v² / R","2v² / πR","v² / πR","Zero"],
     correctAnswer: 1,
-    solution: 'Step 1: After half revolution, the velocity vector reverses its direction.\n\nStep 2: Change in velocity (Δv) = v_final - v_initial = v - (-v) = 2v (in magnitude).\n\nStep 3: Time taken for half revolution (Δt) = Distance / Speed = πR / v.\n\nStep 4: Average acceleration = Δv / Δt = 2v / (πR / v) = 2v² / πR.',
-    communitySolutions: []
+    solution:"Step 1: After half revolution, the velocity vector reverses its direction.\n\nStep 2: Change in velocity (Δv) = v_final - v_initial = v - (-v) = 2v (in magnitude).\n\nStep 3: Time taken for half revolution (Δt) = Distance / Speed = πR / v.\n\nStep 4: Average acceleration = Δv / Δt = 2v / (πR / v) = 2v² / πR.",
+    communitySolutions: [],
   },
   {
     id: 103,
-    subject: 'Chemistry',
-    chapter: 'Atomic Structure',
-    difficulty: 'Easy',
-    text: 'The number of radial nodes for 3p orbital is:',
-    options: ['0', '1', '2', '3'],
+    subject:"Chemistry",
+    chapter:"Atomic Structure",
+    difficulty:"Easy",
+    text:"The number of radial nodes for 3p orbital is:",
+    options: ["0","1","2","3"],
     correctAnswer: 1,
-    solution: 'Step 1: The formula for radial nodes is n - l - 1.\n\nStep 2: For 3p orbital, n = 3 and l = 1.\n\nStep 3: Radial nodes = 3 - 1 - 1 = 1.',
-    communitySolutions: []
+    solution:"Step 1: The formula for radial nodes is n - l - 1.\n\nStep 2: For 3p orbital, n = 3 and l = 1.\n\nStep 3: Radial nodes = 3 - 1 - 1 = 1.",
+    communitySolutions: [],
   },
   {
     id: 104,
-    subject: 'Mathematics',
-    chapter: 'Calculus',
-    difficulty: 'Medium',
-    text: 'Evaluate the limit: lim(x->0) (sin 3x) / x',
-    options: ['0', '1', '3', '1/3'],
+    subject:"Mathematics",
+    chapter:"Calculus",
+    difficulty:"Medium",
+    text:"Evaluate the limit: lim(x->0) (sin 3x) / x",
+    options: ["0","1","3","1/3"],
     correctAnswer: 2,
-    solution: 'Step 1: Multiply and divide by 3.\n\nStep 2: lim(x->0) 3 * (sin 3x) / (3x)\n\nStep 3: Since lim(y->0) (sin y) / y = 1, the limit evaluates to 3 * 1 = 3.',
-    communitySolutions: []
+    solution:"Step 1: Multiply and divide by 3.\n\nStep 2: lim(x->0) 3 * (sin 3x) / (3x)\n\nStep 3: Since lim(y->0) (sin y) / y = 1, the limit evaluates to 3 * 1 = 3.",
+    communitySolutions: [],
   },
   {
     id: 105,
-    subject: 'Physics',
-    chapter: 'Work Energy Power',
-    difficulty: 'Easy',
-    text: 'A force F = (2i + 3j) N acts on a particle and displaces it from (1, 2) to (3, 5). Find the work done.',
-    options: ['10 J', '13 J', '15 J', '18 J'],
+    subject:"Physics",
+    chapter:"Work Energy Power",
+    difficulty:"Easy",
+    text:"A force F = (2i + 3j) N acts on a particle and displaces it from (1, 2) to (3, 5). Find the work done.",
+    options: ["10 J","13 J","15 J","18 J"],
     correctAnswer: 1,
-    solution: 'Step 1: Displacement vector d = (3-1)i + (5-2)j = 2i + 3j.\n\nStep 2: Work done W = F . d = (2i + 3j) . (2i + 3j) = (2)(2) + (3)(3) = 4 + 9 = 13 J.',
-    communitySolutions: []
-  }
+    solution:"Step 1: Displacement vector d = (3-1)i + (5-2)j = 2i + 3j.\n\nStep 2: Work done W = F . d = (2i + 3j) . (2i + 3j) = (2)(2) + (3)(3) = 4 + 9 = 13 J.",
+    communitySolutions: [],
+  },
 ];
 
 const PracticeMCQScreen = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get initial index from location state, fallback to 0
   const initialIndex = location.state?.questionIndex || 0;
-  const source = location.state?.source || 'unknown';
-  const isChapterWisePYQ = source === 'chapter-wise-pyq';
-  const isDppQuiz = source === 'dpp_quiz';
+  const source = location.state?.source ||"unknown";
+  const isChapterWisePYQ = source ==="chapter-wise-pyq";
+  const isDppQuiz = source ==="dpp_quiz";
   const [isReviewMode, setIsReviewMode] = useState(false);
   const isQuizActive = isDppQuiz && !isReviewMode;
-  
-  const [currentIndex, setCurrentIndex] = useState(initialIndex % MOCK_QUESTIONS.length);
-  
+
+  const [currentIndex, setCurrentIndex] = useState(
+    initialIndex % MOCK_QUESTIONS.length,
+  );
+
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
-  const [questionStates, setQuestionStates] = useState<Record<number, 'unvisited' | 'attempted' | 'correct' | 'incorrect'>>({});
+  const [questionStates, setQuestionStates] = useState<
+    Record<number,"unvisited" |"attempted" |"correct" |"incorrect">
+  >({});
   const [bookmarked, setBookmarked] = useState<Record<number, boolean>>({});
-  
+
   const [showSolution, setShowSolution] = useState(false);
-  const [solutionTab, setSolutionTab] = useState<'official' | 'community'>('official');
+  const [solutionTab, setSolutionTab] = useState<"official" |"community">("official",
+  );
   const [showScratchpad, setShowScratchpad] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   const [timeSpent, setTimeSpent] = useState<Record<number, number>>({});
   const [attempts, setAttempts] = useState<Record<number, number>>({});
 
   // Community Solutions State
-  const [communitySolutions, setCommunitySolutions] = useState<Record<string, any[]>>({});
+  const [communitySolutions, setCommunitySolutions] = useState<
+    Record<string, any[]>
+  >({});
   const [loadingSolutions, setLoadingSolutions] = useState(false);
   const [showAddSolution, setShowAddSolution] = useState(false);
-  const [newSolutionText, setNewSolutionText] = useState('');
+  const [newSolutionText, setNewSolutionText] = useState("");
   const [newSolutionImage, setNewSolutionImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<string>('Detailed Method');
-  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
+  const [selectedTag, setSelectedTag] = useState<string>("Detailed Method");
+  const [expandedReplies, setExpandedReplies] = useState<
+    Record<string, boolean>
+  >({});
   const [replyText, setReplyText] = useState<Record<string, string>>({});
-  const [selectedFilterTag, setSelectedFilterTag] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'top' | 'newest'>('top');
-  const [searchQuery, setSearchQuery] = useState('');
-  const solutionTags = ['Detailed Method', 'Short Trick', 'Formula Based', 'Elimination'];
+  const [selectedFilterTag, setSelectedFilterTag] = useState<string | null>(
+    null,
+  );
+  const [sortBy, setSortBy] = useState<"top" |"newest">("top");
+  const [searchQuery, setSearchQuery] = useState("");
+  const solutionTags = ["Detailed Method","Short Trick","Formula Based","Elimination",
+  ];
   const { user, saveActivity } = useUser();
 
   const [showReport, setShowReport] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
-  const [dppScore, setDppScore] = useState({ correct: 0, incorrect: 0, unattempted: 0, totalScore: 0 });
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [dppScore, setDppScore] = useState({
+    correct: 0,
+    incorrect: 0,
+    unattempted: 0,
+    totalScore: 0,
+  });
 
   const currentQuestion = MOCK_QUESTIONS[currentIndex];
   const selectedOption = userAnswers[currentQuestion.id] ?? null;
-  const isSubmitted = isReviewMode || questionStates[currentQuestion.id] === 'correct' || questionStates[currentQuestion.id] === 'incorrect';
+  const isSubmitted =
+    isReviewMode ||
+    questionStates[currentQuestion.id] ==="correct" ||
+    questionStates[currentQuestion.id] ==="incorrect";
   const currentSolutions = communitySolutions[String(currentQuestion.id)] || [];
-  const filteredSolutions = selectedFilterTag 
-    ? currentSolutions.filter(sol => sol.tag === selectedFilterTag)
+  const filteredSolutions = selectedFilterTag
+    ? currentSolutions.filter((sol) => sol.tag === selectedFilterTag)
     : currentSolutions;
-  
+
   const searchedSolutions = searchQuery
-    ? filteredSolutions.filter(sol => 
-        sol.text.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        sol.author.toLowerCase().includes(searchQuery.toLowerCase())
+    ? filteredSolutions.filter(
+        (sol) =>
+          sol.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          sol.author.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : filteredSolutions;
 
   const sortedSolutions = [...searchedSolutions].sort((a, b) => {
-    if (sortBy === 'top') {
+    if (sortBy ==="top") {
       return (b.upvotes || 0) - (a.upvotes || 0);
     } else {
       return (b.createdAt || 0) - (a.createdAt || 0);
@@ -182,57 +239,74 @@ const PracticeMCQScreen = () => {
   });
 
   useEffect(() => {
-    if (!currentQuestion?.id || !user || user.uid === 'demo') {
+    if (!currentQuestion?.id || !user || user.uid ==="demo") {
       setLoadingSolutions(false);
       return;
     }
-    
+
     setLoadingSolutions(true);
     const q = query(
-      collection(db, 'solutions'),
-      where('questionId', '==', String(currentQuestion.id))
+      collection(db,"solutions"),
+      where("questionId","==", String(currentQuestion.id)),
     );
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      let solutionsData = await Promise.all(snapshot.docs.map(async (docSnapshot) => {
-        const data = docSnapshot.data();
-        
-        // Fetch replies
-        const repliesQuery = query(collection(db, `solutions/${docSnapshot.id}/replies`));
-        const repliesSnapshot = await getDocs(repliesQuery);
-        const replies = repliesSnapshot.docs.map(r => ({ id: r.id, ...r.data() })).sort((a: any, b: any) => {
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        });
+    const unsubscribe = onSnapshot(
+      q,
+      async (snapshot) => {
+        let solutionsData = await Promise.all(
+          snapshot.docs.map(async (docSnapshot) => {
+            const data = docSnapshot.data();
 
-        // Fetch user's vote
-        let userVote = null;
-        if (user?.uid && user.uid !== 'demo') {
-          const voteDoc = await getDoc(doc(db, `solutions/${docSnapshot.id}/votes/${user.uid}`));
-          if (voteDoc.exists()) {
-            userVote = voteDoc.data().type;
-          }
-        }
+            // Fetch replies
+            const repliesQuery = query(
+              collection(db, `solutions/${docSnapshot.id}/replies`),
+            );
+            const repliesSnapshot = await getDocs(repliesQuery);
+            const replies = repliesSnapshot.docs
+              .map((r) => ({ id: r.id, ...r.data() }))
+              .sort((a: any, b: any) => {
+                return (
+                  new Date(a.createdAt).getTime() -
+                  new Date(b.createdAt).getTime()
+                );
+              });
 
-        return {
-          id: docSnapshot.id,
-          ...data,
-          replies,
-          userVote
-        };
-      }));
+            // Fetch user's vote
+            let userVote = null;
+            if (user?.uid && user.uid !=="demo") {
+              const voteDoc = await getDoc(
+                doc(db, `solutions/${docSnapshot.id}/votes/${user.uid}`),
+              );
+              if (voteDoc.exists()) {
+                userVote = voteDoc.data().type;
+              }
+            }
 
-      // Sort by upvotes descending
-      solutionsData.sort((a: any, b: any) => (b.upvotes || 0) - (a.upvotes || 0));
+            return {
+              id: docSnapshot.id,
+              ...data,
+              replies,
+              userVote,
+            };
+          }),
+        );
 
-      setCommunitySolutions(prev => ({
-        ...prev,
-        [String(currentQuestion.id)]: solutionsData
-      }));
-      setLoadingSolutions(false);
-    }, (error) => {
-      console.error("Error fetching solutions:", error);
-      setLoadingSolutions(false);
-    });
+        // Sort by upvotes descending
+        solutionsData.sort(
+          (a: any, b: any) => (b.upvotes || 0) - (a.upvotes || 0),
+        );
+
+        setCommunitySolutions((prev) => ({
+          ...prev,
+          [String(currentQuestion.id)]: solutionsData,
+        }));
+        setLoadingSolutions(false);
+      },
+      (error) => {
+        console.error("Error fetching solutions:", error);
+        setLoadingSolutions(false);
+      },
+    );
 
     return () => unsubscribe();
   }, [currentQuestion?.id, user?.uid]);
@@ -244,7 +318,7 @@ const PracticeMCQScreen = () => {
       reader.onloadend = () => {
         const img = new Image();
         img.onload = () => {
-          const canvas = document.createElement('canvas');
+          const canvas = document.createElement("canvas");
           const MAX_WIDTH = 800;
           const MAX_HEIGHT = 800;
           let width = img.width;
@@ -264,10 +338,10 @@ const PracticeMCQScreen = () => {
 
           canvas.width = width;
           canvas.height = height;
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext("2d");
           ctx?.drawImage(img, 0, 0, width, height);
-          
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
           setNewSolutionImage(compressedDataUrl);
         };
         img.src = reader.result as string;
@@ -278,7 +352,7 @@ const PracticeMCQScreen = () => {
 
   const handleAddSolution = async () => {
     if (!newSolutionText.trim() && !newSolutionImage) return;
-    if (!user || user.uid === 'demo') {
+    if (!user || user.uid ==="demo") {
       alert("Please log in to add a solution.");
       return;
     }
@@ -292,7 +366,7 @@ const PracticeMCQScreen = () => {
         id: newId,
         questionId: String(currentQuestion.id),
         authorId: user.uid,
-        author: user.name || 'Anonymous Student',
+        author: user.name ||"Anonymous Student",
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
         text: newSolutionText,
         imageUrl: imageUrl,
@@ -302,17 +376,17 @@ const PracticeMCQScreen = () => {
         downvotes: 0,
         repliesCount: 0,
         date: new Date().toLocaleDateString(),
-        createdAt: Date.now()
+        createdAt: Date.now(),
       };
 
-      await setDoc(doc(db, 'solutions', newId), newSolution);
-      
-      setNewSolutionText('');
+      await setDoc(doc(db,"solutions", newId), newSolution);
+
+      setNewSolutionText("");
       setNewSolutionImage(null);
-      setSelectedTag('Detailed Method');
+      setSelectedTag("Detailed Method");
       setShowAddSolution(false);
     } catch (error) {
-      handleFirestoreError(error, 'create', 'solutions');
+      handleFirestoreError(error,"create","solutions");
       console.error("Error adding solution:", error);
       alert("Failed to add solution. Please try again.");
     } finally {
@@ -323,7 +397,7 @@ const PracticeMCQScreen = () => {
   const handleAddReply = async (solutionId: string) => {
     const text = replyText[solutionId as any];
     if (!text?.trim() || !user) return;
-    if (user.uid === 'demo') {
+    if (user.uid ==="demo") {
       alert("Please log in to reply to solutions.");
       return;
     }
@@ -334,7 +408,7 @@ const PracticeMCQScreen = () => {
         id: newId,
         solutionId: solutionId,
         authorId: user.uid,
-        author: user.name || 'Anonymous Student',
+        author: user.name ||"Anonymous Student",
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
         text: text,
         date: new Date().toLocaleDateString(),
@@ -342,11 +416,11 @@ const PracticeMCQScreen = () => {
       };
 
       await setDoc(doc(db, `solutions/${solutionId}/replies`, newId), newReply);
-      await updateDoc(doc(db, 'solutions', solutionId), {
-        repliesCount: increment(1)
+      await updateDoc(doc(db,"solutions", solutionId), {
+        repliesCount: increment(1),
       });
 
-      setReplyText(prev => ({ ...prev, [solutionId as any]: '' }));
+      setReplyText((prev) => ({ ...prev, [solutionId as any]:"" }));
     } catch (error) {
       console.error("Error adding reply:", error);
       alert("Failed to add reply.");
@@ -354,14 +428,14 @@ const PracticeMCQScreen = () => {
   };
 
   const toggleReplies = (solutionId: string) => {
-    setExpandedReplies(prev => ({
+    setExpandedReplies((prev) => ({
       ...prev,
-      [solutionId as any]: !prev[solutionId as any]
+      [solutionId as any]: !prev[solutionId as any],
     }));
   };
 
-  const handleVote = async (solutionId: string, type: 'up' | 'down') => {
-    if (!user || user.uid === 'demo') {
+  const handleVote = async (solutionId: string, type:"up" |"down") => {
+    if (!user || user.uid ==="demo") {
       alert("Please log in to vote.");
       return;
     }
@@ -369,7 +443,7 @@ const PracticeMCQScreen = () => {
     try {
       const voteRef = doc(db, `solutions/${solutionId}/votes/${user.uid}`);
       const voteDoc = await getDoc(voteRef);
-      const solutionRef = doc(db, 'solutions', solutionId);
+      const solutionRef = doc(db,"solutions", solutionId);
 
       if (voteDoc.exists()) {
         const currentVote = voteDoc.data().type;
@@ -377,21 +451,29 @@ const PracticeMCQScreen = () => {
           // Remove vote
           await deleteDoc(voteRef);
           await updateDoc(solutionRef, {
-            [type === 'up' ? 'upvotes' : 'downvotes']: increment(-1)
+            [type ==="up" ?"upvotes" :"downvotes"]: increment(-1),
           });
         } else {
           // Switch vote
-          await setDoc(voteRef, { type, userId: user.uid, solutionId: solutionId });
+          await setDoc(voteRef, {
+            type,
+            userId: user.uid,
+            solutionId: solutionId,
+          });
           await updateDoc(solutionRef, {
-            [type === 'up' ? 'upvotes' : 'downvotes']: increment(1),
-            [currentVote === 'up' ? 'upvotes' : 'downvotes']: increment(-1)
+            [type ==="up" ?"upvotes" :"downvotes"]: increment(1),
+            [currentVote ==="up" ?"upvotes" :"downvotes"]: increment(-1),
           });
         }
       } else {
         // New vote
-        await setDoc(voteRef, { type, userId: user.uid, solutionId: solutionId });
+        await setDoc(voteRef, {
+          type,
+          userId: user.uid,
+          solutionId: solutionId,
+        });
         await updateDoc(solutionRef, {
-          [type === 'up' ? 'upvotes' : 'downvotes']: increment(1)
+          [type ==="up" ?"upvotes" :"downvotes"]: increment(1),
         });
       }
     } catch (error) {
@@ -402,21 +484,21 @@ const PracticeMCQScreen = () => {
 
   const handleShareSolution = (solutionId: string) => {
     navigator.clipboard.writeText(window.location.href);
-    alert('Link copied to clipboard!');
+    alert("Link copied to clipboard!");
   };
 
   const handleSaveSolution = async (solutionId: string) => {
-    if (!user || user.uid === 'demo') {
+    if (!user || user.uid ==="demo") {
       alert("Please log in to save solutions.");
       return;
     }
     try {
-      await addDoc(collection(db, 'savedSolutions'), {
+      await addDoc(collection(db,"savedSolutions"), {
         userId: user.uid,
         solutionId,
-        savedAt: Date.now()
+        savedAt: Date.now(),
       });
-      alert('Solution saved successfully!');
+      alert("Solution saved successfully!");
     } catch (error) {
       console.error("Error saving solution:", error);
       alert("Failed to save solution.");
@@ -424,18 +506,18 @@ const PracticeMCQScreen = () => {
   };
 
   const handleReportSolution = async (solutionId: string) => {
-    if (!user || user.uid === 'demo') {
+    if (!user || user.uid ==="demo") {
       alert("Please log in to report solutions.");
       return;
     }
     try {
-      await addDoc(collection(db, 'reports'), {
+      await addDoc(collection(db,"reports"), {
         solutionId,
         reporterId: user.uid,
         createdAt: Date.now(),
-        status: 'pending'
+        status:"pending",
       });
-      alert('Thank you for reporting. Our team will review this solution.');
+      alert("Thank you for reporting. Our team will review this solution.");
     } catch (error) {
       console.error("Error reporting solution:", error);
       alert("Failed to report solution.");
@@ -443,9 +525,9 @@ const PracticeMCQScreen = () => {
   };
 
   const handleDeleteSolution = async (solutionId: string) => {
-    if (!user || user.uid === 'demo') return;
+    if (!user || user.uid ==="demo") return;
     try {
-      await deleteDoc(doc(db, 'solutions', solutionId));
+      await deleteDoc(doc(db,"solutions", solutionId));
     } catch (error) {
       console.error("Error deleting solution:", error);
       alert("Failed to delete solution.");
@@ -453,11 +535,11 @@ const PracticeMCQScreen = () => {
   };
 
   const handleDeleteReply = async (solutionId: string, replyId: string) => {
-    if (!user || user.uid === 'demo') return;
+    if (!user || user.uid ==="demo") return;
     try {
       await deleteDoc(doc(db, `solutions/${solutionId}/replies`, replyId));
-      await updateDoc(doc(db, 'solutions', solutionId), {
-        repliesCount: increment(-1)
+      await updateDoc(doc(db,"solutions", solutionId), {
+        repliesCount: increment(-1),
       });
     } catch (error) {
       console.error("Error deleting reply:", error);
@@ -468,22 +550,33 @@ const PracticeMCQScreen = () => {
   useEffect(() => {
     // Reset solution view when changing questions
     setShowSolution(isSubmitted);
-    
+
     // Mark as visited if unvisited
     if (!questionStates[currentQuestion.id]) {
-      setQuestionStates(prev => ({ ...prev, [currentQuestion.id]: 'unvisited' }));
+      setQuestionStates((prev) => ({
+        ...prev,
+        [currentQuestion.id]:"unvisited",
+      }));
     }
   }, [currentIndex, currentQuestion.id, isSubmitted, questionStates]);
 
-  const isTimerPaused = showScratchpad || showPalette || showReport || showSubmitConfirm || showAddSolution || showSolution || isSubmitted;
-  const [overallTime, setOverallTime] = useState(0); 
+  const isTimerPaused =
+    showScratchpad ||
+    showPalette ||
+    showReport ||
+    showSubmitConfirm ||
+    showExitConfirm ||
+    showAddSolution ||
+    showSolution ||
+    isSubmitted;
+  const [overallTime, setOverallTime] = useState(0);
   const totalDuration = MOCK_QUESTIONS.length * 60; // 1 min per question for countdown
 
   useEffect(() => {
     if (isSubmitted || isTimerPaused) return;
 
     const timer = setInterval(() => {
-      setOverallTime(prev => {
+      setOverallTime((prev) => {
         const nextTime = prev + 1;
         // Auto-submit if time runs out in DPQuiz mode
         if (isQuizActive && nextTime >= totalDuration && !showReport) {
@@ -491,15 +584,21 @@ const PracticeMCQScreen = () => {
         }
         return nextTime;
       });
-      
-      setTimeSpent(prev => ({
+
+      setTimeSpent((prev) => ({
         ...prev,
-        [currentQuestion.id]: (prev[currentQuestion.id] || 0) + 1
+        [currentQuestion.id]: (prev[currentQuestion.id] || 0) + 1,
       }));
     }, 1000);
-    
+
     return () => clearInterval(timer);
-  }, [currentQuestion.id, isSubmitted, isTimerPaused, isQuizActive, showReport]);
+  }, [
+    currentQuestion.id,
+    isSubmitted,
+    isTimerPaused,
+    isQuizActive,
+    showReport,
+  ]);
 
   const formatOverallTime = () => {
     let secondsRemaining = overallTime;
@@ -508,30 +607,33 @@ const PracticeMCQScreen = () => {
     }
     const mins = Math.floor(secondsRemaining / 60);
     const secs = secondsRemaining % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2,"0")}:${secs.toString().padStart(2,"0")}`;
   };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2,"0")}:${secs.toString().padStart(2,"0")}`;
   };
 
   const handleOptionSelect = (index: number) => {
     if (isSubmitted && !isQuizActive) return;
-    setUserAnswers(prev => ({ ...prev, [currentQuestion.id]: index }));
+    setUserAnswers((prev) => ({ ...prev, [currentQuestion.id]: index }));
     if (isQuizActive) {
-      setQuestionStates(prev => ({ ...prev, [currentQuestion.id]: 'attempted' }));
+      setQuestionStates((prev) => ({
+        ...prev,
+        [currentQuestion.id]:"attempted",
+      }));
     }
   };
 
   const handleSubmit = async () => {
     if (selectedOption === null) return;
-    
+
     const isCorrect = selectedOption === currentQuestion.correctAnswer;
-    setQuestionStates(prev => ({
+    setQuestionStates((prev) => ({
       ...prev,
-      [currentQuestion.id]: isCorrect ? 'correct' : 'incorrect'
+      [currentQuestion.id]: isCorrect ?"correct" :"incorrect",
     }));
     setShowSolution(true);
 
@@ -556,41 +658,44 @@ const PracticeMCQScreen = () => {
     let correct = 0;
     let incorrect = 0;
     let unattempted = 0;
-    
+
     const newQuestionStates = { ...questionStates };
 
-    MOCK_QUESTIONS.forEach(q => {
+    MOCK_QUESTIONS.forEach((q) => {
       const ans = userAnswers[q.id];
       if (ans === undefined) {
         unattempted++;
       } else if (ans === q.correctAnswer) {
         correct++;
-        newQuestionStates[q.id] = 'correct';
+        newQuestionStates[q.id] ="correct";
       } else {
         incorrect++;
-        newQuestionStates[q.id] = 'incorrect';
+        newQuestionStates[q.id] ="incorrect";
       }
     });
-    
+
     setQuestionStates(newQuestionStates);
-    const totalScore = (correct * 4) - (incorrect * 1);
+    const totalScore = correct * 4 - incorrect * 1;
     setDppScore({
       correct,
       incorrect,
       unattempted,
-      totalScore
+      totalScore,
     });
-    
-    const totalTimeSeconds = Object.values(timeSpent).reduce((a, b) => a + b, 0);
+
+    const totalTimeSeconds = Object.values(timeSpent).reduce(
+      (a, b) => a + b,
+      0,
+    );
     const totalTimeMinutes = Math.round(totalTimeSeconds / 60);
     await saveActivity(correct, correct * 100, totalTimeMinutes, totalScore);
-    
+
     setShowSubmitConfirm(false);
     setShowReport(true);
   };
 
   const handleClear = () => {
-    setUserAnswers(prev => {
+    setUserAnswers((prev) => {
       const newAnswers = { ...prev };
       delete newAnswers[currentQuestion.id];
       return newAnswers;
@@ -598,7 +703,7 @@ const PracticeMCQScreen = () => {
   };
 
   const toggleBookmark = (id: number) => {
-    setBookmarked(prev => ({ ...prev, [id]: !prev[id] }));
+    setBookmarked((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleNext = () => {
@@ -615,63 +720,89 @@ const PracticeMCQScreen = () => {
 
   if (showReport) {
     return (
-      <div className="min-h-screen bg-[#0F172A] text-white font-kanit flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white  flex flex-col items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-slate-800/80 border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl relative overflow-hidden"
+          className="bg-slate-50/80 dark:bg-slate-800/80 border border-slate-900/10 dark:border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand to-blue-500"></div>
-          
+
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-brand/30">
               <Trophy size={40} className="text-brand" />
             </div>
-            <h2 className="text-3xl font-bold text-white mb-2">Quiz Completed!</h2>
-            <p className="text-slate-400">Here's your performance report</p>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              Quiz Completed!
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400">
+              Here's your performance report
+            </p>
           </div>
 
           <div className="space-y-4 mb-8">
-            <div className="bg-slate-900/50 rounded-2xl p-4 flex items-center justify-between border border-white/5">
+            <div className="bg-white/5 dark:bg-slate-900/50 rounded-2xl p-4 flex items-center justify-between border border-slate-900/5 dark:border-white/5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
                   <CheckCircle2 size={20} className="text-emerald-500" />
                 </div>
-                <span className="font-medium text-slate-300">Correct</span>
+                <span className="font-medium text-slate-600 dark:text-slate-300">
+                  Correct
+                </span>
               </div>
-              <span className="text-xl font-bold text-emerald-500">{dppScore.correct}</span>
+              <span className="text-xl font-bold text-emerald-500">
+                {dppScore.correct}
+              </span>
             </div>
 
-            <div className="bg-slate-900/50 rounded-2xl p-4 flex items-center justify-between border border-white/5">
+            <div className="bg-white/5 dark:bg-slate-900/50 rounded-2xl p-4 flex items-center justify-between border border-slate-900/5 dark:border-white/5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center">
                   <XCircle size={20} className="text-rose-500" />
                 </div>
-                <span className="font-medium text-slate-300">Incorrect</span>
+                <span className="font-medium text-slate-600 dark:text-slate-300">
+                  Incorrect
+                </span>
               </div>
-              <span className="text-xl font-bold text-rose-500">{dppScore.incorrect}</span>
+              <span className="text-xl font-bold text-rose-500">
+                {dppScore.incorrect}
+              </span>
             </div>
 
-            <div className="bg-slate-900/50 rounded-2xl p-4 flex items-center justify-between border border-white/5">
+            <div className="bg-white/5 dark:bg-slate-900/50 rounded-2xl p-4 flex items-center justify-between border border-slate-900/5 dark:border-white/5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center">
-                  <MinusCircle size={20} className="text-slate-400" />
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                  <MinusCircle
+                    size={20}
+                    className="text-slate-500 dark:text-slate-400"
+                  />
                 </div>
-                <span className="font-medium text-slate-300">Unattempted</span>
+                <span className="font-medium text-slate-600 dark:text-slate-300">
+                  Unattempted
+                </span>
               </div>
-              <span className="text-xl font-bold text-slate-400">{dppScore.unattempted}</span>
+              <span className="text-xl font-bold text-slate-500 dark:text-slate-400">
+                {dppScore.unattempted}
+              </span>
             </div>
           </div>
 
           <div className="bg-brand/10 border border-brand/20 rounded-2xl p-6 text-center mb-8">
-            <p className="text-brand font-bold text-sm uppercase tracking-wider mb-1">Total Score</p>
-            <div className="text-4xl font-black text-white">{dppScore.totalScore} <span className="text-xl text-slate-400 font-medium">/ {MOCK_QUESTIONS.length * 4}</span></div>
+            <p className="text-brand font-bold text-sm uppercase tracking-wider mb-1">
+              Total Score
+            </p>
+            <div className="text-4xl font-black text-slate-900 dark:text-white">
+              {dppScore.totalScore}{""}
+              <span className="text-xl text-slate-500 dark:text-slate-400 font-medium">
+                / {MOCK_QUESTIONS.length * 4}
+              </span>
+            </div>
           </div>
 
           <div className="flex gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="flex-1 py-3.5 bg-slate-700 text-white rounded-xl font-bold hover:bg-slate-600 transition-colors"
+              className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
               Back to DPPs
             </button>
@@ -692,66 +823,89 @@ const PracticeMCQScreen = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-white font-kanit flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white  flex flex-col">
       {/* Header */}
-      <header className="px-4 py-3 border-b border-white/5 bg-slate-900/90 backdrop-blur-md flex items-center justify-between sticky top-0 z-40">
+      <header className="px-4 py-3 border-b border-slate-900/5 dark:border-white/5 bg-white/9 dark:bg-slate-900/90 backdrop-blur-md flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-2 md:gap-3">
-          <button onClick={() => navigate(-1)} className="p-1 md:p-2 -ml-1 md:-ml-2 hover:bg-white/5 rounded-full transition-colors shrink-0">
+          <button
+            onClick={() => {
+              if (!isSubmitted && !isReviewMode) {
+                setShowExitConfirm(true);
+              } else {
+                navigate(-1);
+              }
+            }}
+            className="p-1 md:p-2 -ml-1 md:-ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-full transition-colors shrink-0"
+          >
             <ArrowLeft size={20} />
           </button>
           <div className="font-bold text-xs sm:text-sm md:text-base flex flex-wrap items-center gap-2 md:gap-3">
-            <span className="whitespace-nowrap">Question {currentIndex + 1} <span className="text-slate-500 font-normal">/ {MOCK_QUESTIONS.length}</span></span>
+            <span className="whitespace-nowrap">
+              Question {currentIndex + 1}{""}
+              <span className="text-slate-500 dark:text-slate-400 font-normal">
+                / {MOCK_QUESTIONS.length}
+              </span>
+            </span>
             <div className="flex items-center gap-1 md:gap-1.5 text-brand bg-brand/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[10px] md:text-xs font-bold whitespace-nowrap">
               <Clock size={14} />
               {formatTime(timeSpent[currentQuestion.id] || 0)}
             </div>
             {isQuizActive && (
               <div className="flex items-center gap-1 md:gap-1.5 text-orange-400 bg-orange-400/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[10px] md:text-xs font-bold whitespace-nowrap">
-                 <span>{formatOverallTime()} left</span>
+                <span>{formatOverallTime()} left</span>
               </div>
             )}
             {!isQuizActive && !isReviewMode && (
-               <div className="flex items-center gap-1 md:gap-1.5 text-blue-400 bg-blue-400/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[10px] md:text-xs font-bold whitespace-nowrap">
-                 <span>Quiz Time: {formatOverallTime()}</span>
+              <div className="flex items-center gap-1 md:gap-1.5 text-blue-400 bg-blue-400/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[10px] md:text-xs font-bold whitespace-nowrap">
+                <span>Quiz Time: {formatOverallTime()}</span>
               </div>
             )}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-1 md:gap-2">
-          <button 
+          <button
             onClick={() => setShowPalette(true)}
-            className="p-2 text-slate-400 hover:text-brand hover:bg-brand/10 rounded-full transition-colors" 
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-brand hover:bg-brand/10 rounded-full transition-colors"
             title="Question Palette"
           >
             <LayoutGrid size={20} />
           </button>
           {isQuizActive && (
-            <button 
+            <button
               onClick={() => setShowSubmitConfirm(true)}
               className="mr-2 px-3 py-1.5 bg-brand text-white rounded-lg text-sm font-bold hover:bg-brand-light transition-colors shadow-lg shadow-brand/20 hidden sm:block"
             >
               Submit
             </button>
           )}
-          <button 
+          <button
             onClick={() => setShowScratchpad(!showScratchpad)}
-            className={`p-2 rounded-full transition-colors ${showScratchpad ? 'text-brand bg-brand/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            className={`p-2 rounded-full transition-colors ${showScratchpad ?"text-brand bg-brand/10" :"text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800"}`}
             title="Scratchpad"
           >
             <PenTool size={20} />
           </button>
-          <button 
+          <button
             onClick={() => toggleBookmark(currentQuestion.id)}
-            className={`p-2 rounded-full transition-colors ${bookmarked[currentQuestion.id] ? 'text-yellow-500 bg-yellow-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            className={`p-2 rounded-full transition-colors ${bookmarked[currentQuestion.id] ?"text-yellow-500 bg-yellow-500/10" :"text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800"}`}
             title="Bookmark"
           >
-            <Bookmark size={20} fill={bookmarked[currentQuestion.id] ? "currentColor" : "none"} />
+            <Bookmark
+              size={20}
+              fill={bookmarked[currentQuestion.id] ?"currentColor" :"none"}
+            />
           </button>
-          <button className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors" title="Report">
+          <button
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors"
+            title="Report"
+          >
             <AlertTriangle size={20} />
           </button>
-          <button className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-colors hidden md:block" title="Menu">
+          <button
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-full transition-colors hidden md:block"
+            title="Menu"
+          >
             <MoreVertical size={20} />
           </button>
         </div>
@@ -766,27 +920,31 @@ const PracticeMCQScreen = () => {
 
       {/* Main Content */}
       <main className="flex-1 max-w-3xl w-full mx-auto p-4 md:p-6 flex flex-col pb-32">
-        <motion.div 
+        <motion.div
           key={currentQuestion.id}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.2 }}
-          className="bg-slate-800/50 border border-white/5 rounded-2xl p-5 md:p-6 mb-6"
+          className="bg-slate-50/50 dark:bg-slate-800/50 border border-slate-900/5 dark:border-white/5 rounded-2xl p-5 md:p-6 mb-6"
         >
           {/* Tags */}
           <div className="flex flex-wrap gap-2 items-center mb-4">
             <span className="text-[10px] font-bold uppercase tracking-wider text-brand bg-brand/10 px-2.5 py-1 rounded-md">
               {currentQuestion.subject}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 bg-slate-700 px-2.5 py-1 rounded-md">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-md">
               {currentQuestion.chapter}
             </span>
-            <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md ${
-              currentQuestion.difficulty === 'Easy' ? 'text-emerald-400 bg-emerald-400/10' :
-              currentQuestion.difficulty === 'Medium' ? 'text-amber-400 bg-amber-400/10' :
-              'text-rose-400 bg-rose-400/10'
-            }`}>
+            <span
+              className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md ${
+                currentQuestion.difficulty ==="Easy"
+                  ?"text-emerald-400 bg-emerald-400/10"
+                  : currentQuestion.difficulty ==="Medium"
+                    ?"text-amber-400 bg-amber-400/10"
+                    :"text-rose-400 bg-rose-400/10"
+              }`}
+            >
               {currentQuestion.difficulty}
             </span>
           </div>
@@ -801,22 +959,24 @@ const PracticeMCQScreen = () => {
             {currentQuestion.options.map((option, index) => {
               const isSelected = selectedOption === index;
               const isCorrect = currentQuestion.correctAnswer === index;
-              
-              let optionClass = "bg-slate-800 border-white/10 hover:border-brand/50 hover:bg-slate-800/80";
+
+              let optionClass ="bg-slate-50 dark:bg-slate-800 border-slate-900/10 dark:border-white/10 hover:border-brand/50 hover:bg-slate-50/80 dark:hover:bg-slate-800/80";
               let icon = null;
 
               if (isSubmitted && !isQuizActive) {
                 if (isCorrect) {
-                  optionClass = "bg-emerald-500/10 border-emerald-500/50 text-emerald-400";
-                  icon = <CheckCircle2 size={20} className="text-emerald-500" />;
+                  optionClass ="bg-emerald-500/10 border-emerald-500/50 text-emerald-400";
+                  icon = (
+                    <CheckCircle2 size={20} className="text-emerald-500" />
+                  );
                 } else if (isSelected) {
-                  optionClass = "bg-rose-500/10 border-rose-500/50 text-rose-400";
+                  optionClass ="bg-rose-500/10 border-rose-500/50 text-rose-400";
                   icon = <XCircle size={20} className="text-rose-500" />;
                 } else {
-                  optionClass = "bg-slate-800/50 border-white/5 opacity-50";
+                  optionClass ="bg-slate-50/50 dark:bg-slate-800/50 border-slate-900/5 dark:border-white/5 opacity-50";
                 }
               } else if (isSelected) {
-                optionClass = "bg-brand/10 border-brand text-brand";
+                optionClass ="bg-brand/10 border-brand text-brand";
               }
 
               return (
@@ -827,21 +987,32 @@ const PracticeMCQScreen = () => {
                   className={`w-full text-left p-4 rounded-xl border transition-all flex items-center justify-between group ${optionClass}`}
                 >
                   <div className="flex items-center gap-4">
-                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-                      isSubmitted && !isQuizActive && isCorrect ? 'bg-emerald-500/20 text-emerald-500' :
-                      isSubmitted && !isQuizActive && isSelected && !isCorrect ? 'bg-rose-500/20 text-rose-500' :
-                      isSelected ? 'bg-brand text-white' : 'bg-slate-700 text-slate-400 group-hover:bg-slate-600'
-                    }`}>
+                    <span
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
+                        isSubmitted && !isQuizActive && isCorrect
+                          ?"bg-emerald-500/20 text-emerald-500"
+                          : isSubmitted &&
+                              !isQuizActive &&
+                              isSelected &&
+                              !isCorrect
+                            ?"bg-rose-500/20 text-rose-500"
+                            : isSelected
+                              ?"bg-brand text-white"
+                              :"bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-slate-200 dark:hover:bg-slate-600"
+                      }`}
+                    >
                       {String.fromCharCode(65 + index)}
                     </span>
-                    <span className="font-medium break-words whitespace-pre-wrap">{option}</span>
+                    <span className="font-medium break-words whitespace-pre-wrap">
+                      {option}
+                    </span>
                   </div>
                   {icon}
                 </button>
               );
             })}
           </div>
-          
+
           {/* Action Buttons */}
           <div className="mt-6 flex flex-col gap-3">
             {!isQuizActive && (
@@ -858,7 +1029,7 @@ const PracticeMCQScreen = () => {
                     <button
                       onClick={handleClear}
                       disabled={selectedOption === null}
-                      className="px-6 py-3 bg-slate-800 text-slate-300 border border-white/5 rounded-xl font-bold hover:bg-slate-700 transition-colors disabled:opacity-50"
+                      className="px-6 py-3 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-900/5 dark:border-white/5 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 transition-colors disabled:opacity-50"
                     >
                       Clear
                     </button>
@@ -867,25 +1038,29 @@ const PracticeMCQScreen = () => {
                   <>
                     <button
                       onClick={() => setShowSolution(!showSolution)}
-                      className="flex-1 py-3 bg-slate-800 text-white border border-white/10 rounded-xl font-bold hover:bg-slate-700 transition-colors"
+                      className="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-900/10 dark:border-white/10 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 transition-colors"
                     >
-                      {showSolution ? 'Hide Solution' : 'Show Solution'}
+                      {showSolution ?"Hide Solution" :"Show Solution"}
                     </button>
-                    {questionStates[currentQuestion.id] === 'incorrect' && (
+                    {questionStates[currentQuestion.id] ==="incorrect" && (
                       <button
                         onClick={() => {
-                          setQuestionStates(prev => {
+                          setQuestionStates((prev) => {
                             const newStates = { ...prev };
                             delete newStates[currentQuestion.id];
                             return newStates;
                           });
-                          setUserAnswers(prev => {
+                          setUserAnswers((prev) => {
                             const newAnswers = { ...prev };
                             delete newAnswers[currentQuestion.id];
                             return newAnswers;
                           });
                           setShowSolution(false);
-                          setAttempts(prev => ({ ...prev, [currentQuestion.id]: (prev[currentQuestion.id] || 0) + 1 }));
+                          setAttempts((prev) => ({
+                            ...prev,
+                            [currentQuestion.id]:
+                              (prev[currentQuestion.id] || 0) + 1,
+                          }));
                         }}
                         className="flex-1 py-3 bg-amber-500/20 text-amber-500 border border-amber-500/30 rounded-xl font-bold hover:bg-amber-500/30 transition-colors"
                       >
@@ -912,50 +1087,54 @@ const PracticeMCQScreen = () => {
           {showSolution && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height:"auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-slate-800/80 border border-white/5 rounded-2xl overflow-hidden"
+              className="bg-slate-50/80 dark:bg-slate-800/80 border border-slate-900/5 dark:border-white/5 rounded-2xl overflow-hidden"
             >
-              <div className="flex border-b border-white/5">
+              <div className="flex border-b border-slate-900/5 dark:border-white/5">
                 <button
-                  onClick={() => setSolutionTab('official')}
-                  className={`flex-1 py-3 text-sm font-bold transition-colors ${solutionTab === 'official' ? 'text-brand border-b-2 border-brand bg-brand/5' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+                  onClick={() => setSolutionTab("official")}
+                  className={`flex-1 py-3 text-sm font-bold transition-colors ${solutionTab ==="official" ?"text-brand border-b-2 border-brand bg-brand/5" :"text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800"}`}
                 >
                   Official Solution
                 </button>
                 <button
-                  onClick={() => setSolutionTab('community')}
-                  className={`flex-1 py-3 text-sm font-bold transition-colors ${solutionTab === 'community' ? 'text-brand border-b-2 border-brand bg-brand/5' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+                  onClick={() => setSolutionTab("community")}
+                  className={`flex-1 py-3 text-sm font-bold transition-colors ${solutionTab ==="community" ?"text-brand border-b-2 border-brand bg-brand/5" :"text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800"}`}
                 >
                   Community Solutions
                 </button>
               </div>
 
               <div className="p-5 md:p-6">
-                {solutionTab === 'official' ? (
-                  <motion.div 
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                {solutionTab ==="official" ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     className="space-y-6"
                   >
-                    <div className="text-slate-300 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
+                    <div className="text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
                       {currentQuestion.solution}
                     </div>
-                    
-                    <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <span className="text-sm text-slate-400 font-medium">Was this solution helpful?</span>
+
+                    <div className="pt-6 border-t border-slate-900/5 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                        Was this solution helpful?
+                      </span>
                       <div className="flex gap-2">
-                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 border border-white/5 text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30 transition-all text-sm font-bold">
+                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-900/5 dark:border-white/5 text-slate-600 dark:text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30 transition-all text-sm font-bold">
                           <ThumbsUp size={16} /> Yes
                         </button>
-                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 border border-white/5 text-slate-300 hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/30 transition-all text-sm font-bold">
+                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-900/5 dark:border-white/5 text-slate-600 dark:text-slate-300 hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/30 transition-all text-sm font-bold">
                           <ThumbsDown size={16} /> No
                         </button>
                       </div>
                     </div>
                   </motion.div>
                 ) : (
-                  <motion.div 
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     className="space-y-4"
                   >
                     <div className="flex items-center justify-between">
@@ -963,11 +1142,11 @@ const PracticeMCQScreen = () => {
                         <User size={20} />
                         <h3 className="font-bold">Community Solutions</h3>
                       </div>
-                      <button 
+                      <button
                         onClick={() => setShowAddSolution(!showAddSolution)}
                         className="px-4 py-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-xl text-sm font-bold transition-colors"
                       >
-                        {showAddSolution ? 'Cancel' : 'Add Solution'}
+                        {showAddSolution ?"Cancel" :"Add Solution"}
                       </button>
                     </div>
 
@@ -975,15 +1154,19 @@ const PracticeMCQScreen = () => {
                       {showAddSolution && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
+                          animate={{ opacity: 1, height:"auto" }}
                           exit={{ opacity: 0, height: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="bg-slate-800/40 border border-white/5 rounded-2xl p-4 space-y-4 mt-4">
+                          <div className="bg-slate-50/40 dark:bg-slate-800/40 border border-slate-900/5 dark:border-white/5 rounded-2xl p-4 space-y-4 mt-4">
                             {newSolutionImage && (
                               <div className="relative inline-block">
-                                <img src={newSolutionImage} alt="Solution preview" className="max-h-48 rounded-lg border border-white/10" />
-                                <button 
+                                <img
+                                  src={newSolutionImage}
+                                  alt="Solution preview"
+                                  className="max-h-48 rounded-lg border border-slate-900/10 dark:border-white/10"
+                                />
+                                <button
                                   onClick={() => setNewSolutionImage(null)}
                                   className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                                 >
@@ -993,31 +1176,33 @@ const PracticeMCQScreen = () => {
                             )}
                             <textarea
                               value={newSolutionText}
-                              onChange={(e) => setNewSolutionText(e.target.value)}
+                              onChange={(e) =>
+                                setNewSolutionText(e.target.value)
+                              }
                               placeholder="Explain how you solved this question..."
-                              className="w-full bg-slate-900/50 border border-white/10 rounded-xl p-4 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 min-h-[120px] resize-none"
+                              className="w-full bg-white/5 dark:bg-slate-900/50 border border-slate-900/10 dark:border-white/10 rounded-xl p-4 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-500 dark:text-slate-400 focus:outline-none focus:border-blue-500/50 min-h-[120px] resize-none"
                             />
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                               <div className="flex flex-wrap gap-2">
-                                <label className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 bg-slate-900/50 text-slate-400 border border-white/5 hover:bg-slate-800 hover:text-slate-300">
+                                <label className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 bg-white/5 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border border-slate-900/5 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300">
                                   <ImageIcon size={14} />
                                   Add Image
-                                  <input 
-                                    type="file" 
-                                    accept="image/*" 
-                                    className="hidden" 
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
                                     onChange={handleImageUpload}
                                   />
                                 </label>
-                                <div className="w-px h-6 bg-white/10 mx-1 self-center"></div>
-                                {solutionTags.map(tag => (
+                                <div className="w-px h-6 bg-white/1 dark:bg-slate-900/10 mx-1 self-center"></div>
+                                {solutionTags.map((tag) => (
                                   <button
                                     key={tag}
                                     onClick={() => setSelectedTag(tag)}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
-                                      selectedTag === tag 
-                                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
-                                        : 'bg-slate-900/50 text-slate-400 border border-white/5 hover:bg-slate-800'
+                                      selectedTag === tag
+                                        ?"bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                        :"bg-white/5 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border border-slate-900/5 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800"
                                     }`}
                                   >
                                     <Tag size={12} />
@@ -1027,15 +1212,19 @@ const PracticeMCQScreen = () => {
                               </div>
                               <button
                                 onClick={handleAddSolution}
-                                disabled={(!newSolutionText.trim() && !newSolutionImage) || isUploading}
+                                disabled={
+                                  (!newSolutionText.trim() &&
+                                    !newSolutionImage) ||
+                                  isUploading
+                                }
                                 className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-colors whitespace-nowrap"
                               >
                                 {isUploading ? (
-                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                  <div className="w-4 h-4 border-2 border-slate-900 dark:border-white border-t-transparent rounded-full animate-spin"></div>
                                 ) : (
                                   <Send size={16} />
                                 )}
-                                {isUploading ? 'Posting...' : 'Post Solution'}
+                                {isUploading ?"Posting..." :"Post Solution"}
                               </button>
                             </div>
                           </div>
@@ -1051,13 +1240,16 @@ const PracticeMCQScreen = () => {
                             placeholder="Search solutions by text or author..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-slate-800/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50"
+                            className="w-full bg-slate-50/50 dark:bg-slate-800/50 border border-slate-900/10 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-500 dark:text-slate-400 focus:outline-none focus:border-blue-500/50"
                           />
-                          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                          <Search
+                            size={16}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400"
+                          />
                           {searchQuery && (
                             <button
-                              onClick={() => setSearchQuery('')}
-                              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                              onClick={() => setSearchQuery("")}
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                             >
                               <X size={14} />
                             </button>
@@ -1069,20 +1261,20 @@ const PracticeMCQScreen = () => {
                               onClick={() => setSelectedFilterTag(null)}
                               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                                 selectedFilterTag === null
-                                  ? 'bg-brand text-white'
-                                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300'
+                                  ?"bg-brand text-white"
+                                  :"bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300"
                               }`}
                             >
                               All
                             </button>
-                            {solutionTags.map(tag => (
+                            {solutionTags.map((tag) => (
                               <button
                                 key={tag}
                                 onClick={() => setSelectedFilterTag(tag)}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
                                   selectedFilterTag === tag
-                                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                    : 'bg-slate-800 text-slate-400 border border-transparent hover:bg-slate-700 hover:text-slate-300'
+                                    ?"bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                    :"bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300"
                                 }`}
                               >
                                 <Tag size={12} />
@@ -1090,19 +1282,23 @@ const PracticeMCQScreen = () => {
                               </button>
                             ))}
                           </div>
-                          <div className="flex items-center gap-2 bg-slate-800/50 p-1 rounded-lg border border-white/5">
+                          <div className="flex items-center gap-2 bg-slate-50/50 dark:bg-slate-800/50 p-1 rounded-lg border border-slate-900/5 dark:border-white/5">
                             <button
-                              onClick={() => setSortBy('top')}
+                              onClick={() => setSortBy("top")}
                               className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
-                                sortBy === 'top' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-300'
+                                sortBy ==="top"
+                                  ?"bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white"
+                                  :"text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                               }`}
                             >
                               Top
                             </button>
                             <button
-                              onClick={() => setSortBy('newest')}
+                              onClick={() => setSortBy("newest")}
                               className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
-                                sortBy === 'newest' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-300'
+                                sortBy ==="newest"
+                                  ?"bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white"
+                                  :"text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                               }`}
                             >
                               Newest
@@ -1113,110 +1309,156 @@ const PracticeMCQScreen = () => {
                     )}
 
                     {loadingSolutions ? (
-                      <div className="bg-slate-800/20 border border-white/5 rounded-2xl p-8 text-center flex flex-col items-center justify-center mt-4">
+                      <div className="bg-slate-50/20 dark:bg-slate-800/20 border border-slate-900/5 dark:border-white/5 rounded-2xl p-8 text-center flex flex-col items-center justify-center mt-4">
                         <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p className="text-slate-300 font-medium">Loading community solutions...</p>
+                        <p className="text-slate-600 dark:text-slate-300 font-medium">
+                          Loading community solutions...
+                        </p>
                       </div>
                     ) : currentSolutions.length === 0 ? (
-                      <div className="bg-slate-800/20 border border-white/5 rounded-2xl p-8 text-center flex flex-col items-center justify-center mt-4">
-                        <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-white/5">
-                          <MessageSquare size={24} className="text-slate-500" />
+                      <div className="bg-slate-50/20 dark:bg-slate-800/20 border border-slate-900/5 dark:border-white/5 rounded-2xl p-8 text-center flex flex-col items-center justify-center mt-4">
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-slate-900/5 dark:border-white/5">
+                          <MessageSquare
+                            size={24}
+                            className="text-slate-500 dark:text-slate-400"
+                          />
                         </div>
-                        <p className="text-slate-300 font-medium mb-1">No community solutions yet.</p>
-                        <p className="text-slate-500 text-sm">Be the first to add one!</p>
+                        <p className="text-slate-600 dark:text-slate-300 font-medium mb-1">
+                          No community solutions yet.
+                        </p>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">
+                          Be the first to add one!
+                        </p>
                       </div>
                     ) : sortedSolutions.length === 0 ? (
-                      <div className="bg-slate-800/20 border border-white/5 rounded-2xl p-8 text-center flex flex-col items-center justify-center mt-4">
-                        <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-white/5">
-                          <MessageSquare size={24} className="text-slate-500" />
+                      <div className="bg-slate-50/20 dark:bg-slate-800/20 border border-slate-900/5 dark:border-white/5 rounded-2xl p-8 text-center flex flex-col items-center justify-center mt-4">
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-slate-900/5 dark:border-white/5">
+                          <MessageSquare
+                            size={24}
+                            className="text-slate-500 dark:text-slate-400"
+                          />
                         </div>
-                        <p className="text-slate-300 font-medium mb-1">No solutions found for this tag.</p>
+                        <p className="text-slate-600 dark:text-slate-300 font-medium mb-1">
+                          No solutions found for this tag.
+                        </p>
                       </div>
                     ) : (
                       <div className="space-y-4 mt-4">
                         {sortedSolutions.map((sol) => (
-                          <div key={sol.id} className="bg-slate-800/40 border border-white/5 rounded-2xl p-5">
+                          <div
+                            key={sol.id}
+                            className="bg-slate-50/40 dark:bg-slate-800/40 border border-slate-900/5 dark:border-white/5 rounded-2xl p-5"
+                          >
                             <div className="flex items-center justify-between mb-4">
                               <div className="flex items-center gap-3">
-                                <img src={sol.avatar} alt={sol.author} className="w-8 h-8 rounded-full bg-slate-700" />
+                                <img
+                                  src={sol.avatar}
+                                  alt={sol.author}
+                                  className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700"
+                                />
                                 <div>
                                   <div className="flex items-center gap-1.5">
-                                    <div className="text-sm font-bold text-slate-200">{sol.author}</div>
+                                    <div className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                                      {sol.author}
+                                    </div>
                                     {sol.isVerified && (
-                                      <BadgeCheck size={14} className="text-blue-400" />
+                                      <BadgeCheck
+                                        size={14}
+                                        className="text-blue-400"
+                                      />
                                     )}
                                   </div>
                                   <div className="flex items-center gap-2 mt-0.5">
-                                    <div className="text-xs text-slate-500">{sol.date}</div>
-                                    <span className="w-1 h-1 rounded-full bg-slate-600"></span>
+                                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                                      {sol.date}
+                                    </div>
+                                    <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-600"></span>
                                     <div className="text-[10px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-1.5 py-0.5 rounded">
-                                      {sol.tag || 'Detailed Method'}
+                                      {sol.tag ||"Detailed Method"}
                                     </div>
                                   </div>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
                                 {user && sol.authorId === user.uid && (
-                                  <button 
+                                  <button
                                     onClick={() => handleDeleteSolution(sol.id)}
-                                    className="p-2 text-slate-500 hover:text-red-400 transition-colors"
+                                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
                                     title="Delete Solution"
                                   >
                                     <X size={16} />
                                   </button>
                                 )}
-                                <button 
+                                <button
                                   onClick={() => handleShareSolution(sol.id)}
-                                  className="p-2 text-slate-500 hover:text-slate-300 transition-colors"
+                                  className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                                   title="Share Solution"
                                 >
                                   <Share2 size={16} />
                                 </button>
                               </div>
                             </div>
-                            <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap mb-4">
+                            <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap mb-4">
                               {sol.text}
                               {sol.imageUrl && (
                                 <div className="mt-4">
-                                  <img src={sol.imageUrl} alt="Solution attachment" className="max-h-64 rounded-xl border border-white/10 object-contain" />
+                                  <img
+                                    src={sol.imageUrl}
+                                    alt="Solution attachment"
+                                    className="max-h-64 rounded-xl border border-slate-900/10 dark:border-white/10 object-contain"
+                                  />
                                 </div>
                               )}
                             </div>
-                            <div className="flex items-center justify-between border-t border-white/5 pt-4">
+                            <div className="flex items-center justify-between border-t border-slate-900/5 dark:border-white/5 pt-4">
                               <div className="flex items-center gap-4">
-                                <button 
-                                  onClick={() => handleVote(sol.id, 'up')}
-                                  className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${sol.userVote === 'up' ? 'text-emerald-500' : 'text-slate-400 hover:text-emerald-400'}`}
+                                <button
+                                  onClick={() => handleVote(sol.id,"up")}
+                                  className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${sol.userVote ==="up" ?"text-emerald-500" :"text-slate-500 dark:text-slate-400 hover:text-emerald-400"}`}
                                 >
-                                  <ThumbsUp size={16} className={sol.userVote === 'up' ? 'fill-current' : ''} />
+                                  <ThumbsUp
+                                    size={16}
+                                    className={
+                                      sol.userVote ==="up"
+                                        ?"fill-current"
+                                        :""
+                                    }
+                                  />
                                   {sol.upvotes}
                                 </button>
-                                <button 
-                                  onClick={() => handleVote(sol.id, 'down')}
-                                  className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${sol.userVote === 'down' ? 'text-red-500' : 'text-slate-400 hover:text-red-400'}`}
+                                <button
+                                  onClick={() => handleVote(sol.id,"down")}
+                                  className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${sol.userVote ==="down" ?"text-red-500" :"text-slate-500 dark:text-slate-400 hover:text-red-400"}`}
                                 >
-                                  <ThumbsDown size={16} className={sol.userVote === 'down' ? 'fill-current' : ''} />
+                                  <ThumbsDown
+                                    size={16}
+                                    className={
+                                      sol.userVote ==="down"
+                                        ?"fill-current"
+                                        :""
+                                    }
+                                  />
                                   {sol.downvotes}
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => toggleReplies(sol.id)}
-                                  className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-blue-400 transition-colors ml-2"
+                                  className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-blue-400 transition-colors ml-2"
                                 >
                                   <MessageSquare size={16} />
                                   {sol.repliesCount}
                                 </button>
                               </div>
                               <div className="flex items-center gap-3">
-                                <button 
+                                <button
                                   onClick={() => handleSaveSolution(sol.id)}
-                                  className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors"
+                                  className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                                 >
                                   <Bookmark size={14} />
                                   Save
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => handleReportSolution(sol.id)}
-                                  className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-red-400 transition-colors"
+                                  className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
                                 >
                                   <Flag size={14} />
                                   Report
@@ -1229,46 +1471,75 @@ const PracticeMCQScreen = () => {
                               {expandedReplies[sol.id] && (
                                 <motion.div
                                   initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: 'auto' }}
+                                  animate={{ opacity: 1, height:"auto" }}
                                   exit={{ opacity: 0, height: 0 }}
                                   className="overflow-hidden"
                                 >
-                                  <div className="pt-4 mt-4 border-t border-white/5 space-y-4">
+                                  <div className="pt-4 mt-4 border-t border-slate-900/5 dark:border-white/5 space-y-4">
                                     {sol.replies?.map((reply: any) => (
-                                      <div key={reply.id} className="flex gap-3 pl-4 border-l-2 border-white/5 group">
-                                        <img src={reply.avatar} alt={reply.author} className="w-6 h-6 rounded-full bg-slate-700" />
+                                      <div
+                                        key={reply.id}
+                                        className="flex gap-3 pl-4 border-l-2 border-slate-900/5 dark:border-white/5 group"
+                                      >
+                                        <img
+                                          src={reply.avatar}
+                                          alt={reply.author}
+                                          className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700"
+                                        />
                                         <div className="flex-1">
                                           <div className="flex items-center justify-between mb-1">
                                             <div className="flex items-center gap-2">
-                                              <span className="text-xs font-bold text-slate-300">{reply.author}</span>
-                                              <span className="text-[10px] text-slate-500">{reply.date}</span>
+                                              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                                                {reply.author}
+                                              </span>
+                                              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                                                {reply.date}
+                                              </span>
                                             </div>
-                                            {user && reply.authorId === user.uid && (
-                                              <button
-                                                onClick={() => handleDeleteReply(sol.id, reply.id)}
-                                                className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-all"
-                                                title="Delete Reply"
-                                              >
-                                                <X size={12} />
-                                              </button>
-                                            )}
+                                            {user &&
+                                              reply.authorId === user.uid && (
+                                                <button
+                                                  onClick={() =>
+                                                    handleDeleteReply(
+                                                      sol.id,
+                                                      reply.id,
+                                                    )
+                                                  }
+                                                  className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-all"
+                                                  title="Delete Reply"
+                                                >
+                                                  <X size={12} />
+                                                </button>
+                                              )}
                                           </div>
-                                          <p className="text-sm text-slate-400">{reply.text}</p>
+                                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                                            {reply.text}
+                                          </p>
                                         </div>
                                       </div>
                                     ))}
-                                    
+
                                     <div className="flex gap-3 pt-2">
-                                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'user'}`} alt="You" className="w-6 h-6 rounded-full bg-slate-700" />
+                                      <img
+                                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name ||"user"}`}
+                                        alt="You"
+                                        className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700"
+                                      />
                                       <div className="flex-1 flex gap-2">
                                         <input
                                           type="text"
-                                          value={replyText[sol.id] || ''}
-                                          onChange={(e) => setReplyText(prev => ({ ...prev, [sol.id]: e.target.value }))}
+                                          value={replyText[sol.id] ||""}
+                                          onChange={(e) =>
+                                            setReplyText((prev) => ({
+                                              ...prev,
+                                              [sol.id]: e.target.value,
+                                            }))
+                                          }
                                           placeholder="Add a reply..."
-                                          className="flex-1 bg-slate-900/50 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50"
+                                          className="flex-1 bg-white/5 dark:bg-slate-900/50 border border-slate-900/10 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-500 dark:text-slate-400 focus:outline-none focus:border-blue-500/50"
                                           onKeyDown={(e) => {
-                                            if (e.key === 'Enter') handleAddReply(sol.id);
+                                            if (e.key ==="Enter")
+                                              handleAddReply(sol.id);
                                           }}
                                         />
                                         <button
@@ -1297,41 +1568,42 @@ const PracticeMCQScreen = () => {
       </main>
 
       {/* Question Navigation Bar (Bottom) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-white/5 p-3 md:p-4 z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/9 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-900/5 dark:border-white/5 p-3 md:p-4 z-40">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-          <button 
+          <button
             onClick={() => setShowPalette(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors border border-white/10 shrink-0"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl font-bold transition-colors border border-slate-900/10 dark:border-white/10 shrink-0"
           >
             <LayoutGrid size={20} className="text-brand" />
             <span className="hidden sm:inline">All Questions</span>
           </button>
-          
+
           <div className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-2 md:justify-center px-2 py-1 mask-linear-fade">
             {MOCK_QUESTIONS.map((q, idx) => {
-              const state = questionStates[q.id] || 'unvisited';
+              const state = questionStates[q.id] ||"unvisited";
               const isCurrent = idx === currentIndex;
               const isBookmarked = bookmarked[q.id];
-              
-              let bgColor = 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200';
-              let borderColor = 'border-white/5';
 
-              if (state === 'correct') {
-                bgColor = 'bg-emerald-500/20 text-emerald-400';
-                borderColor = 'border-emerald-500/30';
-              } else if (state === 'incorrect') {
-                bgColor = 'bg-rose-500/20 text-rose-400';
-                borderColor = 'border-rose-500/30';
-              } else if (state === 'attempted') {
-                bgColor = 'bg-blue-500/20 text-blue-400';
-                borderColor = 'border-blue-500/30';
+              let bgColor ="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-700 dark:text-slate-200";
+              let borderColor ="border-slate-900/5 dark:border-white/5";
+
+              if (state ==="correct") {
+                bgColor ="bg-emerald-500/20 text-emerald-400";
+                borderColor ="border-emerald-500/30";
+              } else if (state ==="incorrect") {
+                bgColor ="bg-rose-500/20 text-rose-400";
+                borderColor ="border-rose-500/30";
+              } else if (state ==="attempted") {
+                bgColor ="bg-blue-500/20 text-blue-400";
+                borderColor ="border-blue-500/30";
               }
-              
+
               if (isCurrent) {
-                borderColor = 'border-brand ring-2 ring-brand/20';
-                bgColor = state === 'unvisited' ? 'bg-brand/10 text-brand' : bgColor;
+                borderColor ="border-brand ring-2 ring-brand/20";
+                bgColor =
+                  state ==="unvisited" ?"bg-brand/10 text-brand" : bgColor;
               }
-              
+
               return (
                 <button
                   key={q.id}
@@ -1346,12 +1618,12 @@ const PracticeMCQScreen = () => {
               );
             })}
           </div>
-          
+
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="p-2 md:px-4 md:py-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/5 flex items-center gap-2"
+              className="p-2 md:px-4 md:py-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-slate-900/5 dark:border-white/5 flex items-center gap-2"
             >
               <ChevronLeft size={20} />
               <span className="hidden sm:inline">Prev</span>
@@ -1359,7 +1631,7 @@ const PracticeMCQScreen = () => {
             <button
               onClick={handleNext}
               disabled={currentIndex === MOCK_QUESTIONS.length - 1}
-              className="p-2 md:px-4 md:py-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/5 flex items-center gap-2"
+              className="p-2 md:px-4 md:py-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-slate-900/5 dark:border-white/5 flex items-center gap-2"
             >
               <span className="hidden sm:inline">Next</span>
               <ChevronRight size={20} />
@@ -1367,6 +1639,56 @@ const PracticeMCQScreen = () => {
           </div>
         </div>
       </div>
+
+      {/* Exit Confirmation Modal */}
+      <AnimatePresence>
+        {showExitConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-slate-900 border border-slate-900/10 dark:border-white/10 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
+            >
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <PauseCircle size={32} className="text-amber-500" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  Pause Quiz?
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">
+                  Are you sure you want to pause and exit? Your progress and timer will be paused.
+                </p>
+
+                <div className="mt-4 flex justify-center gap-4 text-sm">
+                  <div className="text-slate-600 dark:text-slate-300">
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      {Object.keys(userAnswers).length}
+                    </span>{""}
+                    / {MOCK_QUESTIONS.length} Attempted
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowExitConfirm(false)}
+                  className="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
+                  className="flex-1 py-3 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/20"
+                >
+                  Exit
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Submit Confirmation Modal */}
       <AnimatePresence>
@@ -1376,28 +1698,34 @@ const PracticeMCQScreen = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
+              className="bg-white dark:bg-slate-900 border border-slate-900/10 dark:border-white/10 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
             >
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 size={32} className="text-brand" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Submit Quiz?</h3>
-                <p className="text-slate-400 text-sm">
-                  Are you sure you want to submit your quiz? You won't be able to change your answers after submission.
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  Submit Quiz?
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">
+                  Are you sure you want to submit your quiz? You won't be able
+                  to change your answers after submission.
                 </p>
-                
+
                 <div className="mt-4 flex justify-center gap-4 text-sm">
-                  <div className="text-slate-300">
-                    <span className="font-bold text-white">{Object.keys(userAnswers).length}</span> / {MOCK_QUESTIONS.length} Attempted
+                  <div className="text-slate-600 dark:text-slate-300">
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      {Object.keys(userAnswers).length}
+                    </span>{""}
+                    / {MOCK_QUESTIONS.length} Attempted
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowSubmitConfirm(false)}
-                  className="flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-colors"
+                  className="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 transition-colors"
                 >
                   Cancel
                 </button>
@@ -1418,59 +1746,93 @@ const PracticeMCQScreen = () => {
         {showPalette && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, y: '100%' }}
+              initial={{ opacity: 0, y:"100%" }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-slate-900 border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-lg shadow-2xl max-h-[85vh] flex flex-col"
+              exit={{ opacity: 0, y:"100%" }}
+              transition={{ type:"spring", damping: 25, stiffness: 300 }}
+              className="bg-white dark:bg-slate-900 border border-slate-900/10 dark:border-white/10 rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-lg shadow-2xl max-h-[85vh] flex flex-col"
             >
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-white">Question Palette</h3>
-                  <p className="text-sm text-slate-400 mt-1">Jump directly to any question</p>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                    Question Palette
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Jump directly to any question
+                  </p>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowPalette(false)}
-                  className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full transition-colors self-start"
+                  className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-white bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 rounded-full transition-colors self-start"
                 >
                   <X size={20} />
                 </button>
               </div>
-              
+
               {/* Legends */}
-              <div className="mb-6 flex flex-wrap gap-3 text-xs font-bold text-slate-300 bg-slate-800/50 p-4 rounded-2xl border border-white/5">
-                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-slate-700 border border-white/10"></div> Unvisited</div>
-                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500/20 border border-blue-500/50"><div className="w-full h-full text-blue-400 flex items-center justify-center text-[10px]">✓</div></div> Attempted</div>
-                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500/50"></div> Correct</div>
-                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-rose-500/20 border border-rose-500/50"></div> Incorrect</div>
-                <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full flex items-center justify-center bg-yellow-500"><Bookmark size={10} className="text-slate-900 fill-slate-900" /></div> Bookmarked</div>
+              <div className="mb-6 flex flex-wrap gap-3 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-900/5 dark:border-white/5">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-slate-100 dark:bg-slate-700 border border-slate-900/10 dark:border-white/10"></div>{""}
+                  Unvisited
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-blue-500/20 border border-blue-500/50">
+                    <div className="w-full h-full text-blue-400 flex items-center justify-center text-[10px]">
+                      ✓
+                    </div>
+                  </div>{""}
+                  Attempted
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500/50"></div>{""}
+                  Correct
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-rose-500/20 border border-rose-500/50"></div>{""}
+                  Incorrect
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center bg-yellow-500">
+                    <Bookmark
+                      size={10}
+                      className="text-slate-900 dark:text-white fill-slate-900"
+                    />
+                  </div>{""}
+                  Bookmarked
+                </div>
               </div>
 
               {/* Grid */}
               <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 gap-3 overflow-y-auto p-1 pr-2 custom-scrollbar">
                 {MOCK_QUESTIONS.map((q, idx) => {
-                  const state = questionStates[q.id] || 'unvisited';
+                  const state = questionStates[q.id] ||"unvisited";
                   const isCurrent = idx === currentIndex;
                   const isBookmarked = bookmarked[q.id];
-                  
-                  let bgColor = 'bg-slate-800 text-slate-400 hover:bg-slate-700 border-white/5 hover:text-white';
-                  if (state === 'correct') bgColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 hover:bg-emerald-500/30';
-                  else if (state === 'incorrect') bgColor = 'bg-rose-500/20 text-rose-400 border-rose-500/50 hover:bg-rose-500/30';
-                  else if (state === 'attempted') bgColor = 'bg-blue-500/20 text-blue-400 border-blue-500/50 hover:bg-blue-500/30';
-                  
+
+                  let bgColor ="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 border-slate-900/5 dark:border-white/5 hover:text-slate-900 dark:hover:text-white dark:text-white";
+                  if (state ==="correct")
+                    bgColor ="bg-emerald-500/20 text-emerald-400 border-emerald-500/50 hover:bg-emerald-500/30";
+                  else if (state ==="incorrect")
+                    bgColor ="bg-rose-500/20 text-rose-400 border-rose-500/50 hover:bg-rose-500/30";
+                  else if (state ==="attempted")
+                    bgColor ="bg-blue-500/20 text-blue-400 border-blue-500/50 hover:bg-blue-500/30";
+
                   return (
                     <button
                       key={q.id}
                       onClick={() => {
-                         setCurrentIndex(idx);
-                         setShowPalette(false);
+                        setCurrentIndex(idx);
+                        setShowPalette(false);
                       }}
-                      className={`relative aspect-square rounded-full font-bold text-sm md:text-base flex items-center justify-center transition-all border ${bgColor} ${isCurrent ? 'ring-4 ring-brand/30 border-brand text-white' : ''} ${state === 'unvisited' && isCurrent ? 'bg-brand text-white border-brand' : ''}`}
+                      className={`relative aspect-square rounded-full font-bold text-sm md:text-base flex items-center justify-center transition-all border ${bgColor} ${isCurrent ?"ring-4 ring-brand/30 border-brand text-white" :""} ${state ==="unvisited" && isCurrent ?"bg-brand text-white border-brand" :""}`}
                     >
                       {idx + 1}
                       {isBookmarked && (
                         <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full border-2 border-slate-900 flex items-center justify-center shadow-sm">
-                          <Bookmark size={8} className="text-slate-900 fill-slate-900" />
+                          <Bookmark
+                            size={8}
+                            className="text-slate-900 dark:text-white fill-slate-900"
+                          />
                         </div>
                       )}
                     </button>

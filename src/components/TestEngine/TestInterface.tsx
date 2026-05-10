@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  X, 
-  Clock, 
-  ChevronLeft, 
-  ChevronRight, 
-  LayoutGrid, 
+import React, { useState, useEffect, useRef } from"react";
+import { motion, AnimatePresence } from"motion/react";
+import {
+  X,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
   CheckCircle2,
   AlertCircle,
   HelpCircle,
   Menu,
   Play,
-  PenTool
-} from 'lucide-react';
-import { SubjectType, Question } from './types';
-import Scratchpad from '../Scratchpad';
+  PenTool,
+} from"lucide-react";
+import { SubjectType, Question } from"./types";
+import Scratchpad from"../Scratchpad";
 
 interface TestInterfaceProps {
   testData: any;
@@ -23,19 +23,31 @@ interface TestInterfaceProps {
   isCountdownActive?: boolean;
 }
 
-const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmit, isCountdownActive = false }) => {
-  const defaultSubjects = testData.exam === 'NEET' ? ['Physics', 'Chemistry', 'Biology'] : ['Physics', 'Chemistry', 'Mathematics'];
+const TestInterface: React.FC<TestInterfaceProps> = ({
+  testData,
+  onExit,
+  onSubmit,
+  isCountdownActive = false,
+}) => {
+  const defaultSubjects =
+    testData.exam ==="NEET"
+      ? ["Physics","Chemistry","Biology"]
+      : ["Physics","Chemistry","Mathematics"];
   const subjects = testData.subjects || defaultSubjects;
-  const duration = testData.duration || (testData.exam === 'NEET' ? 200 : 180);
-  const questionCount = testData.questionCount || (testData.exam === 'NEET' ? 200 : 90);
+  const duration = testData.duration || (testData.exam ==="NEET" ? 200 : 180);
+  const questionCount =
+    testData.questionCount || (testData.exam ==="NEET" ? 200 : 90);
 
-  const [currentSubject, setCurrentSubject] = useState<SubjectType>(subjects[0]);
+  const [currentSubject, setCurrentSubject] = useState<SubjectType>(
+    subjects[0],
+  );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(duration * 60);
   const [answers, setAnswers] = useState<Record<string, string | number>>({});
   const [markedForReview, setMarkedForReview] = useState<string[]>([]);
   const [showNavModal, setShowNavModal] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [showScratchpad, setShowScratchpad] = useState(false);
 
@@ -51,26 +63,39 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
       return Array.from({ length: count }).map((_, i) => {
         let year = testData.year;
         if (!year) {
-          if (testData.yearFilter === 'Specific' && testData.specificYears?.length > 0) {
-            year = testData.specificYears[Math.floor(Math.random() * testData.specificYears.length)];
-          } else if (testData.yearFilter === 'Last 5 Years') {
+          if (
+            testData.yearFilter ==="Specific" &&
+            testData.specificYears?.length > 0
+          ) {
+            year =
+              testData.specificYears[
+                Math.floor(Math.random() * testData.specificYears.length)
+              ];
+          } else if (testData.yearFilter ==="Last 5 Years") {
             year = 2020 + Math.floor(Math.random() * 6);
           } else {
             year = 2010 + Math.floor(Math.random() * 16);
           }
         }
-        
-        const source = testData.isPYQ || testData.year ? 'PYQ' : (testData.source || 'Practice');
+
+        const source =
+          testData.isPYQ || testData.year
+            ?"PYQ"
+            : testData.source ||"Practice";
 
         return {
           id: `${sub}-${i}`,
-          type: i % 5 === 0 ? 'Numerical' : 'MCQ',
+          type: i % 5 === 0 ?"Numerical" :"MCQ",
           subject: sub,
           text: `[${source} ${year}] This is a sample question for ${sub}. What is the correct approach to solve this problem involving multiple concepts?`,
-          options: i % 5 === 0 ? undefined : ['Option A is correct', 'Option B is incorrect', 'Option C is partially correct', 'Option D is definitely wrong'],
-          correctAnswer: i % 5 === 0 ? 42 : 'Option A is correct',
-          explanation: 'Step by step explanation goes here...',
-          points: 4
+          options:
+            i % 5 === 0
+              ? undefined
+              : ["Option A is correct","Option B is incorrect","Option C is partially correct","Option D is definitely wrong",
+                ],
+          correctAnswer: i % 5 === 0 ? 42 :"Option A is correct",
+          explanation:"Step by step explanation goes here...",
+          points: 4,
         };
       });
     });
@@ -79,7 +104,7 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
   const currentQuestion = questions[currentQuestionIndex];
 
   useEffect(() => {
-    if (isPaused || isCountdownActive) return;
+    if (isPaused || isCountdownActive || showSubmitModal || showExitModal) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -92,13 +117,13 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [isPaused, isCountdownActive]);
+  }, [isPaused, isCountdownActive, showSubmitModal, showExitModal]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
-    return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${h > 0 ? h +":" :""}${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
   };
 
   const handleAnswer = (answer: string | number) => {
@@ -107,7 +132,9 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
 
   const toggleMarkForReview = () => {
     if (markedForReview.includes(currentQuestion.id)) {
-      setMarkedForReview(markedForReview.filter(id => id !== currentQuestion.id));
+      setMarkedForReview(
+        markedForReview.filter((id) => id !== currentQuestion.id),
+      );
     } else {
       setMarkedForReview([...markedForReview, currentQuestion.id]);
     }
@@ -132,55 +159,64 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
       answers,
       markedForReview,
       timeSpent: duration * 60 - timeLeft,
-      questions
+      questions,
     });
   };
 
   const getQuestionStatus = (index: number) => {
     const qId = questions[index].id;
-    if (index === currentQuestionIndex) return 'current';
-    if (markedForReview.includes(qId)) return 'marked';
-    if (answers[qId] !== undefined) return 'answered';
-    return 'unvisited';
+    if (index === currentQuestionIndex) return"current";
+    if (markedForReview.includes(qId)) return"marked";
+    if (answers[qId] !== undefined) return"answered";
+    return"unvisited";
   };
 
   return (
-    <div className="fixed inset-0 bg-[#0F172A] text-white flex flex-col z-50 overflow-hidden font-kanit">
+    <div className="fixed inset-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex flex-col z-50 overflow-hidden">
       {/* Top Bar */}
-      <header className="px-6 py-4 flex items-center justify-between border-bottom border-white/5 bg-slate-900/50">
+      <header className="px-6 py-4 flex items-center justify-between border-bottom border-slate-900/5 dark:border-white/5 bg-white/5 dark:bg-slate-900/50">
         <div className="flex items-center gap-4">
-          <button onClick={onExit} className="p-2 -ml-2 hover:bg-white/5 rounded-full transition-colors">
+          <button
+            onClick={() => setShowExitModal(true)}
+            className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-full transition-colors"
+          >
             <X size={24} />
           </button>
           <div className="flex flex-col">
-            <h2 className="text-sm font-bold truncate max-w-[120px]">{testData.name}</h2>
+            <h2 className="text-sm font-bold truncate max-w-[120px]">
+              {testData.name}
+            </h2>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Live Test</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                Live Test
+              </span>
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={() => setShowScratchpad(!showScratchpad)}
-            className={`p-2 rounded-xl border transition-colors ${showScratchpad ? 'bg-brand/20 border-brand/50 text-brand' : 'bg-slate-800 border-white/5 text-slate-400 hover:text-brand'}`}
+            className={`p-2 rounded-xl border transition-colors ${showScratchpad ?"bg-brand/20 border-brand/50 text-brand" :"bg-slate-50 dark:bg-slate-800 border-slate-900/5 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-brand"}`}
             title="Scratchpad"
           >
             <PenTool size={18} />
           </button>
-          <button 
+          <button
             onClick={() => setIsPaused(true)}
-            className="p-2 bg-slate-800 rounded-xl border border-white/5 text-slate-400 hover:text-brand transition-colors"
+            className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-900/5 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-brand transition-colors"
           >
             <Clock size={18} />
           </button>
-          <div className="flex items-center gap-3 px-4 py-2 bg-slate-800 rounded-2xl border border-white/5">
-            <span className="font-mono font-bold text-lg tabular-nums text-brand">{formatTime(timeLeft)}</span>
+          <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-900/5 dark:border-white/5">
+            <span className="font-mono font-bold text-lg tabular-nums text-brand">
+              {formatTime(timeLeft)}
+            </span>
           </div>
         </div>
 
-        <button 
+        <button
           onClick={() => setShowSubmitModal(true)}
           className="px-6 py-2 bg-brand text-white font-bold rounded-xl shadow-lg shadow-brand/20"
         >
@@ -196,22 +232,24 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
       </AnimatePresence>
 
       {/* Subject Tabs */}
-      <div className="flex px-4 bg-slate-900/30 border-b border-white/5 overflow-x-auto no-scrollbar">
+      <div className="flex px-4 bg-white/3 dark:bg-slate-900/30 border-b border-slate-900/5 dark:border-white/5 overflow-x-auto no-scrollbar">
         {subjects.map((sub: SubjectType) => (
           <button
             key={sub}
             onClick={() => {
-              const firstQIndex = questions.findIndex(q => q.subject === sub);
+              const firstQIndex = questions.findIndex((q) => q.subject === sub);
               setCurrentQuestionIndex(firstQIndex);
               setCurrentSubject(sub);
             }}
             className={`px-6 py-4 text-sm font-bold whitespace-nowrap transition-all relative ${
-              currentSubject === sub ? 'text-brand' : 'text-slate-500'
+              currentSubject === sub
+                ?"text-brand"
+                :"text-slate-500 dark:text-slate-400"
             }`}
           >
             {sub}
             {currentSubject === sub && (
-              <motion.div 
+              <motion.div
                 layoutId="activeTab"
                 className="absolute bottom-0 left-0 right-0 h-1 bg-brand rounded-t-full"
               />
@@ -221,7 +259,7 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
       </div>
 
       {/* Question Navigation Bar */}
-      <div className="px-4 py-3 bg-slate-900/20 flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-white/5">
+      <div className="px-4 py-3 bg-white/2 dark:bg-slate-900/20 flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-slate-900/5 dark:border-white/5">
         {questions.map((q, i) => {
           const status = getQuestionStatus(i);
           return (
@@ -232,10 +270,13 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
                 setCurrentSubject(q.subject);
               }}
               className={`min-w-[40px] h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all border ${
-                status === 'current' ? 'bg-brand border-brand text-white scale-110' :
-                status === 'marked' ? 'bg-orange-500 border-orange-500 text-white' :
-                status === 'answered' ? 'bg-emerald-500 border-emerald-500 text-white' :
-                'bg-slate-800 border-white/5 text-slate-500'
+                status ==="current"
+                  ?"bg-brand border-brand text-white scale-110"
+                  : status ==="marked"
+                    ?"bg-orange-500 border-orange-500 text-white"
+                    : status ==="answered"
+                      ?"bg-emerald-500 border-emerald-500 text-white"
+                      :"bg-slate-50 dark:bg-slate-800 border-slate-900/5 dark:border-white/5 text-slate-500 dark:text-slate-400"
               }`}
             >
               {i + 1}
@@ -248,21 +289,25 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl font-black text-brand">Q{currentQuestionIndex + 1}</span>
-            <span className="px-2 py-0.5 bg-slate-800 text-slate-400 text-[10px] font-bold rounded uppercase tracking-wider">
+            <span className="text-2xl font-black text-brand">
+              Q{currentQuestionIndex + 1}
+            </span>
+            <span className="px-2 py-0.5 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold rounded uppercase tracking-wider">
               {currentQuestion.type}
             </span>
           </div>
-          <div className="text-sm font-bold text-emerald-500">+{currentQuestion.points} Marks</div>
+          <div className="text-sm font-bold text-emerald-500">
+            +{currentQuestion.points} Marks
+          </div>
         </div>
 
-        <div className="text-lg leading-relaxed text-slate-200">
+        <div className="text-lg leading-relaxed text-slate-700 dark:text-slate-200">
           {currentQuestion.text}
         </div>
 
         {/* Answer Input */}
         <div className="space-y-4 pt-4">
-          {currentQuestion.type === 'MCQ' ? (
+          {currentQuestion.type ==="MCQ" ? (
             <div className="grid grid-cols-1 gap-3">
               {currentQuestion.options?.map((option, i) => (
                 <button
@@ -270,16 +315,26 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
                   onClick={() => handleAnswer(option)}
                   className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
                     answers[currentQuestion.id] === option
-                      ? 'bg-brand/10 border-brand shadow-lg shadow-brand/10'
-                      : 'bg-slate-800/40 border-white/5 hover:border-white/10'
+                      ?"bg-brand/10 border-brand shadow-lg shadow-brand/10"
+                      :"bg-slate-50/40 dark:bg-slate-800/40 border-slate-900/5 dark:border-white/5 hover:border-slate-900/10 dark:hover:border-white/10"
                   }`}
                 >
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
-                    answers[currentQuestion.id] === option ? 'bg-brand border-brand text-white' : 'border-slate-600 text-slate-500'
-                  }`}>
+                  <div
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
+                      answers[currentQuestion.id] === option
+                        ?"bg-brand border-brand text-white"
+                        :"border-slate-600 text-slate-500 dark:text-slate-400"
+                    }`}
+                  >
                     {String.fromCharCode(65 + i)}
                   </div>
-                  <span className={answers[currentQuestion.id] === option ? 'text-white font-bold' : 'text-slate-400'}>
+                  <span
+                    className={
+                      answers[currentQuestion.id] === option
+                        ?"text-slate-900 dark:text-white font-bold"
+                        :"text-slate-500 dark:text-slate-400"
+                    }
+                  >
                     {option}
                   </span>
                 </button>
@@ -287,67 +342,75 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Enter your answer</p>
-              <input 
+              <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Enter your answer
+              </p>
+              <input
                 type="number"
                 placeholder="0.00"
-                value={answers[currentQuestion.id] || ''}
+                value={answers[currentQuestion.id] ||""}
                 onChange={(e) => handleAnswer(e.target.value)}
-                className="w-full p-6 bg-slate-800/40 border-2 border-white/5 rounded-3xl text-2xl font-bold text-brand focus:border-brand outline-none transition-all"
+                className="w-full p-6 bg-slate-50/40 dark:bg-slate-800/40 border-2 border-slate-900/5 dark:border-white/5 rounded-3xl text-2xl font-bold text-brand focus:border-brand outline-none transition-all"
               />
             </div>
-          ) }
+          )}
         </div>
       </main>
 
       {/* Action Buttons */}
-      <footer className="p-6 bg-slate-900/80 backdrop-blur-lg border-t border-white/5">
+      <footer className="p-6 bg-white/8 dark:bg-slate-900/80 backdrop-blur-lg border-t border-slate-900/5 dark:border-white/5">
         <div className="flex gap-3 mb-4">
-          <button 
+          <button
             onClick={() => {
               const newAnswers = { ...answers };
               delete newAnswers[currentQuestion.id];
               setAnswers(newAnswers);
             }}
-            className="flex-1 py-3 text-sm font-bold text-slate-400 border border-white/5 rounded-xl hover:bg-white/5 transition-all"
+            className="flex-1 py-3 text-sm font-bold text-slate-500 dark:text-slate-400 border border-slate-900/5 dark:border-white/5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 transition-all"
           >
             Clear
           </button>
-          <button 
+          <button
             onClick={toggleMarkForReview}
             className={`flex-1 py-3 text-sm font-bold rounded-xl border transition-all ${
               markedForReview.includes(currentQuestion.id)
-                ? 'bg-orange-500/10 border-orange-500 text-orange-500'
-                : 'text-slate-400 border-white/5 hover:bg-white/5'
+                ?"bg-orange-500/10 border-orange-500 text-orange-500"
+                :"text-slate-500 dark:text-slate-400 border-slate-900/5 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800"
             }`}
           >
-            {markedForReview.includes(currentQuestion.id) ? 'Marked' : 'Mark for Review'}
+            {markedForReview.includes(currentQuestion.id)
+              ?"Marked"
+              :"Mark for Review"}
           </button>
         </div>
-        
+
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={handlePrev}
             disabled={currentQuestionIndex === 0}
             className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all ${
-              currentQuestionIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'bg-slate-800 text-white'
+              currentQuestionIndex === 0
+                ?"opacity-30 cursor-not-allowed"
+                :"bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
             }`}
           >
             <ChevronLeft size={20} />
             Previous
           </button>
-          <button 
+          <button
             onClick={handleNext}
             className="flex-[2] py-4 bg-brand text-white rounded-2xl flex items-center justify-center gap-2 font-bold shadow-xl shadow-brand/30"
           >
-            {currentQuestionIndex === questions.length - 1 ? 'Finish Section' : 'Save & Next'}
+            {currentQuestionIndex === questions.length - 1
+              ?"Finish Section"
+              :"Save & Next"}
             <ChevronRight size={20} />
           </button>
         </div>
 
-        <button 
+        <button
           onClick={() => setShowNavModal(true)}
-          className="w-full mt-4 py-2 text-xs font-bold text-slate-500 flex items-center justify-center gap-2"
+          className="w-full mt-4 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2"
         >
           <LayoutGrid size={14} />
           View All Questions
@@ -357,21 +420,24 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
       {/* Navigation Modal */}
       <AnimatePresence>
         {showNavModal && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] p-6 flex items-end"
           >
-            <motion.div 
-              initial={{ y: '100%' }}
+            <motion.div
+              initial={{ y:"100%" }}
               animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              className="w-full bg-slate-900 rounded-[2.5rem] p-8 max-h-[80vh] overflow-y-auto"
+              exit={{ y:"100%" }}
+              className="w-full bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 max-h-[80vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-bold">Question Paper</h3>
-                <button onClick={() => setShowNavModal(false)} className="p-2 bg-slate-800 rounded-full">
+                <button
+                  onClick={() => setShowNavModal(false)}
+                  className="p-2 bg-slate-50 dark:bg-slate-800 rounded-full"
+                >
                   <X size={20} />
                 </button>
               </div>
@@ -379,30 +445,39 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
               <div className="space-y-8">
                 {subjects.map((sub: SubjectType) => (
                   <div key={sub} className="space-y-4">
-                    <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{sub}</h4>
+                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      {sub}
+                    </h4>
                     <div className="grid grid-cols-5 gap-3">
-                      {questions.filter(q => q.subject === sub).map((q) => {
-                        const index = questions.findIndex(item => item.id === q.id);
-                        const status = getQuestionStatus(index);
-                        return (
-                          <button
-                            key={q.id}
-                            onClick={() => {
-                              setCurrentQuestionIndex(index);
-                              setCurrentSubject(sub);
-                              setShowNavModal(false);
-                            }}
-                            className={`h-12 rounded-xl flex items-center justify-center text-sm font-bold border transition-all ${
-                              status === 'current' ? 'bg-brand border-brand text-white' :
-                              status === 'marked' ? 'bg-orange-500 border-orange-500 text-white' :
-                              status === 'answered' ? 'bg-emerald-500 border-emerald-500 text-white' :
-                              'bg-slate-800 border-white/5 text-slate-500'
-                            }`}
-                          >
-                            {index + 1}
-                          </button>
-                        );
-                      })}
+                      {questions
+                        .filter((q) => q.subject === sub)
+                        .map((q) => {
+                          const index = questions.findIndex(
+                            (item) => item.id === q.id,
+                          );
+                          const status = getQuestionStatus(index);
+                          return (
+                            <button
+                              key={q.id}
+                              onClick={() => {
+                                setCurrentQuestionIndex(index);
+                                setCurrentSubject(sub);
+                                setShowNavModal(false);
+                              }}
+                              className={`h-12 rounded-xl flex items-center justify-center text-sm font-bold border transition-all ${
+                                status ==="current"
+                                  ?"bg-brand border-brand text-white"
+                                  : status ==="marked"
+                                    ?"bg-orange-500 border-orange-500 text-white"
+                                    : status ==="answered"
+                                      ?"bg-emerald-500 border-emerald-500 text-white"
+                                      :"bg-slate-50 dark:bg-slate-800 border-slate-900/5 dark:border-white/5 text-slate-500 dark:text-slate-400"
+                              }`}
+                            >
+                              {index + 1}
+                            </button>
+                          );
+                        })}
                     </div>
                   </div>
                 ))}
@@ -411,19 +486,27 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
               <div className="mt-12 grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 bg-emerald-500 rounded-md" />
-                  <span className="text-xs text-slate-400 font-bold">Answered</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">
+                    Answered
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 bg-orange-500 rounded-md" />
-                  <span className="text-xs text-slate-400 font-bold">Marked</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">
+                    Marked
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 bg-slate-800 border border-white/5 rounded-md" />
-                  <span className="text-xs text-slate-400 font-bold">Unvisited</span>
+                  <div className="w-4 h-4 bg-slate-50 dark:bg-slate-800 border border-slate-900/5 dark:border-white/5 rounded-md" />
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">
+                    Unvisited
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 bg-brand rounded-md" />
-                  <span className="text-xs text-slate-400 font-bold">Current</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">
+                    Current
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -435,19 +518,19 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
       <AnimatePresence>
         {isPaused && (
           <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[80] flex items-center justify-center p-6">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-full max-w-sm bg-slate-900 rounded-[2.5rem] p-8 text-center border border-white/5"
+              className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 text-center border border-slate-900/5 dark:border-white/5"
             >
               <div className="w-20 h-20 bg-brand/10 rounded-full flex items-center justify-center text-brand mx-auto mb-6">
                 <Clock size={40} className="animate-pulse" />
               </div>
               <h3 className="text-2xl font-bold mb-2">Test Paused</h3>
-              <p className="text-slate-400 mb-8">
+              <p className="text-slate-500 dark:text-slate-400 mb-8">
                 Take a breath. Your progress is saved. The timer is stopped.
               </p>
-              <button 
+              <button
                 onClick={() => setIsPaused(false)}
                 className="w-full py-4 bg-brand text-white font-bold rounded-2xl shadow-xl shadow-brand/30 flex items-center justify-center gap-2"
               >
@@ -459,32 +542,68 @@ const TestInterface: React.FC<TestInterfaceProps> = ({ testData, onExit, onSubmi
         )}
       </AnimatePresence>
 
+      {/* Exit Modal */}
+      <AnimatePresence>
+        {showExitModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 text-center"
+            >
+              <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 mx-auto mb-6">
+                <AlertCircle size={40} />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Pause and Exit?</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-8">
+                Are you sure you want to pause and exit the test? Your progress will be saved.
+              </p>
+              <div className="space-y-3">
+                <button
+                  onClick={onExit}
+                  className="w-full py-4 bg-amber-500 text-white font-bold rounded-2xl shadow-xl shadow-amber-500/20"
+                >
+                  Confirm Exit
+                </button>
+                <button
+                  onClick={() => setShowExitModal(false)}
+                  className="w-full py-4 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-bold rounded-2xl"
+                >
+                  Go Back to Test
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Submit Modal */}
       <AnimatePresence>
         {showSubmitModal && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center p-6">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-full max-w-sm bg-slate-900 rounded-[2.5rem] p-8 text-center"
+              className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 text-center"
             >
               <div className="w-20 h-20 bg-brand/10 rounded-full flex items-center justify-center text-brand mx-auto mb-6">
                 <AlertCircle size={40} />
               </div>
               <h3 className="text-2xl font-bold mb-2">Submit Test?</h3>
-              <p className="text-slate-400 mb-8">
-                You have answered {Object.keys(answers).length} out of {questions.length} questions. Are you sure you want to submit?
+              <p className="text-slate-500 dark:text-slate-400 mb-8">
+                You have answered {Object.keys(answers).length} out of{""}
+                {questions.length} questions. Are you sure you want to submit?
               </p>
               <div className="space-y-3">
-                <button 
+                <button
                   onClick={handleSubmit}
                   className="w-full py-4 bg-red-500 text-white font-bold rounded-2xl shadow-xl shadow-red-500/20"
                 >
                   Submit Test
                 </button>
-                <button 
+                <button
                   onClick={() => setShowSubmitModal(false)}
-                  className="w-full py-4 bg-slate-800 text-white font-bold rounded-2xl"
+                  className="w-full py-4 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-bold rounded-2xl"
                 >
                   Go Back to Test
                 </button>

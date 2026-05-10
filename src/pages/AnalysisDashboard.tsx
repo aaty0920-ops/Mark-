@@ -1,18 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Target, BarChart2, AlertTriangle, TrendingUp, Clock, CheckCircle2, History } from 'lucide-react';
-import { 
-  getTestReports, 
-  overallStats, 
-  subjectStats, 
-  chapterStats, 
-  weakChapters, 
+import React, { useEffect, useState } from"react";
+import { motion } from"motion/react";
+import { useNavigate } from"react-router-dom";
+import {
+  ArrowLeft,
+  Target,
+  BarChart2,
+  AlertTriangle,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  History,
+} from"lucide-react";
+import {
+  getTestReports,
+  overallStats,
+  subjectStats,
+  chapterStats,
+  weakChapters,
   strongChapters,
-  timeAnalysis, 
+  timeAnalysis,
   accuracyTrend,
-  TestReport
-} from '../utils/analysis';
+  TestReport,
+} from"../utils/analysis";
 
 interface AnalysisDashboardProps {
   onBack?: () => void;
@@ -46,18 +55,27 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ onBack }) => {
     return (
       <div className="space-y-6 pb-24">
         <header className="flex items-center gap-4 mb-6">
-          <button onClick={handleBack} className="p-2 -ml-2 hover:bg-white/5 rounded-full transition-colors">
+          <button
+            onClick={handleBack}
+            className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-full transition-colors"
+          >
             <ArrowLeft size={24} />
           </button>
           <div>
             <h1 className="text-xl font-bold">Detailed Analysis</h1>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Performance</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+              Performance
+            </p>
           </div>
         </header>
-        <div className="bg-slate-800/40 p-6 rounded-[2rem] border border-white/5 text-center">
-          <BarChart2 size={48} className="mx-auto text-slate-600 mb-4" />
-          <h3 className="text-lg font-bold text-slate-300 mb-2">No Test Data Yet</h3>
-          <p className="text-sm text-slate-500">Complete a test to see your performance analysis.</p>
+        <div className="bg-slate-50/40 dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-900/5 dark:border-white/5 text-center">
+          <BarChart2 size={48} className="mx-auto text-slate-600 dark:text-slate-400 mb-4" />
+          <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-2">
+            No Test Data Yet
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Complete a test to see your performance analysis.
+          </p>
         </div>
       </div>
     );
@@ -66,55 +84,77 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ onBack }) => {
   return (
     <div className="space-y-6 pb-24">
       <header className="flex items-center gap-4 mb-6">
-        <button onClick={handleBack} className="p-2 -ml-2 hover:bg-white/5 rounded-full transition-colors">
+        <button
+          onClick={handleBack}
+          className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-full transition-colors"
+        >
           <ArrowLeft size={24} />
         </button>
         <div>
           <h1 className="text-xl font-bold">Detailed Analysis</h1>
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Performance</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+            Performance
+          </p>
         </div>
       </header>
 
       {/* Overall Performance */}
-      <div className="bg-slate-800/40 p-6 rounded-[2rem] border border-white/5">
+      <div className="bg-slate-50/40 dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-900/5 dark:border-white/5">
         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
           <Target size={20} className="text-brand" />
           Overall Performance
         </h2>
         <div className="flex items-end gap-2 mb-6">
-          <span className="text-4xl font-black text-white">{overall.accuracy}%</span>
-          <span className="text-sm font-bold text-slate-400 mb-1">Accuracy</span>
+          <span className="text-4xl font-black text-slate-900 dark:text-white">
+            {overall.accuracy}%
+          </span>
+          <span className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">
+            Accuracy
+          </span>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl">
-            <div className="text-2xl font-bold text-emerald-500">{overall.correct}</div>
-            <div className="text-xs font-bold text-emerald-500/70 uppercase tracking-wider">Correct</div>
+            <div className="text-2xl font-bold text-emerald-500">
+              {overall.correct}
+            </div>
+            <div className="text-xs font-bold text-emerald-500/70 uppercase tracking-wider">
+              Correct
+            </div>
           </div>
           <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl">
-            <div className="text-2xl font-bold text-rose-500">{overall.wrong}</div>
-            <div className="text-xs font-bold text-rose-500/70 uppercase tracking-wider">Wrong</div>
+            <div className="text-2xl font-bold text-rose-500">
+              {overall.wrong}
+            </div>
+            <div className="text-xs font-bold text-rose-500/70 uppercase tracking-wider">
+              Wrong
+            </div>
           </div>
         </div>
       </div>
 
       {/* Time Analysis */}
-      <div className="bg-slate-800/40 p-6 rounded-[2rem] border border-white/5 flex items-center justify-between">
+      <div className="bg-slate-50/40 dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-900/5 dark:border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
             <Clock size={20} />
           </div>
           <div>
             <h3 className="font-bold text-sm">Avg Time per Test</h3>
-            <p className="text-xs text-slate-400">Time efficiency</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Time efficiency
+            </p>
           </div>
         </div>
-        <div className="text-xl font-bold text-white">
-          {Math.round(avgTime / 60)} <span className="text-sm text-slate-400">min</span>
+        <div className="text-xl font-bold text-slate-900 dark:text-white">
+          {Math.round(avgTime / 60)}{""}
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            min
+          </span>
         </div>
       </div>
 
       {/* Subject Analysis */}
-      <div className="bg-slate-800/40 p-6 rounded-[2rem] border border-white/5">
+      <div className="bg-slate-50/40 dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-900/5 dark:border-white/5">
         <h2 className="text-lg font-bold mb-4">Subject Analysis</h2>
         <div className="space-y-4">
           {Object.entries(subjects).map(([subject, data]) => {
@@ -125,11 +165,11 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ onBack }) => {
                   <span>{subject}</span>
                   <span className="text-brand">{acc.toFixed(0)}%</span>
                 </div>
-                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${acc}%` }} 
-                    className="h-full bg-brand rounded-full" 
+                <div className="h-2 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${acc}%` }}
+                    className="h-full bg-brand rounded-full"
                   />
                 </div>
               </div>
@@ -140,14 +180,17 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ onBack }) => {
 
       {/* Weak Chapters */}
       {weak.length > 0 && (
-        <div className="bg-slate-800/40 p-6 rounded-[2rem] border border-white/5">
+        <div className="bg-slate-50/40 dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-900/5 dark:border-white/5">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-rose-500">
             <AlertTriangle size={20} />
             Weak Chapters
           </h2>
           <div className="space-y-3">
             {weak.map((w, i) => (
-              <div key={i} className="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-white/5">
+              <div
+                key={i}
+                className="flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-900/5 dark:border-white/5"
+              >
                 <span className="font-medium text-sm">{w.chapter}</span>
                 <span className="text-xs font-bold text-rose-500 bg-rose-500/10 px-2 py-1 rounded-md">
                   {w.accuracy}% Acc
@@ -160,14 +203,17 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ onBack }) => {
 
       {/* Strong Chapters */}
       {strong.length > 0 && (
-        <div className="bg-slate-800/40 p-6 rounded-[2rem] border border-white/5">
+        <div className="bg-slate-50/40 dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-900/5 dark:border-white/5">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-emerald-500">
             <CheckCircle2 size={20} />
             Strong Chapters
           </h2>
           <div className="space-y-3">
             {strong.map((s, i) => (
-              <div key={i} className="flex items-center justify-between bg-slate-800/50 p-3 rounded-xl border border-white/5">
+              <div
+                key={i}
+                className="flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-900/5 dark:border-white/5"
+              >
                 <span className="font-medium text-sm">{s.chapter}</span>
                 <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-md">
                   {s.accuracy}% Acc
@@ -180,7 +226,7 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ onBack }) => {
 
       {/* Accuracy Trend */}
       {trend.length > 1 && (
-        <div className="bg-slate-800/40 p-6 rounded-[2rem] border border-white/5">
+        <div className="bg-slate-50/40 dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-900/5 dark:border-white/5">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
             <TrendingUp size={20} className="text-brand" />
             Accuracy Trend
@@ -188,14 +234,16 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ onBack }) => {
           <div className="h-40 flex items-end gap-2 pt-4">
             {trend.slice(-10).map((t, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full bg-slate-800 rounded-t-sm relative flex-1 flex items-end">
-                  <motion.div 
+                <div className="w-full bg-slate-50 dark:bg-slate-800 rounded-t-sm relative flex-1 flex items-end">
+                  <motion.div
                     initial={{ height: 0 }}
                     animate={{ height: `${t.accuracy}%` }}
                     className="w-full bg-brand rounded-t-sm"
                   />
                 </div>
-                <span className="text-[10px] font-bold text-slate-500">T{i+1}</span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                  T{i + 1}
+                </span>
               </div>
             ))}
           </div>
@@ -203,30 +251,44 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ onBack }) => {
       )}
       {/* Recent Tests */}
       {reports.length > 0 && (
-        <div className="bg-slate-800/40 p-6 rounded-[2rem] border border-white/5">
+        <div className="bg-slate-50/40 dark:bg-slate-800/40 p-6 rounded-[2rem] border border-slate-900/5 dark:border-white/5">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
             <History size={20} className="text-brand" />
             Recent Tests
           </h2>
           <div className="space-y-3">
-            {reports.slice().reverse().slice(0, 5).map((r, i) => (
-              <div key={i} className="bg-slate-800/50 p-4 rounded-xl border border-white/5">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-bold text-sm">{r.subject || 'Full Test'}</h3>
-                    <p className="text-xs text-slate-400">{r.chapter || 'Mixed Chapters'}</p>
+            {reports
+              .slice()
+              .reverse()
+              .slice(0, 5)
+              .map((r, i) => (
+                <div
+                  key={i}
+                  className="bg-slate-50/50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-900/5 dark:border-white/5"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-bold text-sm">
+                        {r.subject ||"Full Test"}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {r.chapter ||"Mixed Chapters"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-brand font-bold">{r.score}</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {""}
+                        / {r.total * 4}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-brand font-bold">{r.score}</span>
-                    <span className="text-xs text-slate-500"> / {r.total * 4}</span>
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <span>{new Date(r.date).toLocaleDateString()}</span>
+                    <span>{Math.round(r.timeTaken / 60)} mins</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>{new Date(r.date).toLocaleDateString()}</span>
-                  <span>{Math.round(r.timeTaken / 60)} mins</span>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       )}

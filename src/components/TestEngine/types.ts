@@ -1,7 +1,34 @@
-import React from 'react';
+import React from"react";
 
-export type ExamType = 'JEE Main' | 'JEE Advanced' | 'BITSAT' | 'MHT-CET' | 'NDA' | 'VITEEE' | 'NEST' | 'COMEDK' | 'NEET' | 'AIIMS' | 'JIPMER' | 'NEET NTA' | 'INI-CET' | 'MHT-CET (PCB)' | 'KCET (Med)' | 'AP EAMCET';
-export type SubjectType = 'Physics' | 'Chemistry' | 'Mathematics' | 'Biology' | 'English Proficiency' | 'Logical Reasoning' | 'English' | 'General Ability Test' | 'Aptitude' | 'General Knowledge' | 'All MBBS Subjects';
+export type ExamType =
+  |"JEE Main"
+  |"JEE Advanced"
+  |"BITSAT"
+  |"MHT-CET"
+  |"NDA"
+  |"VITEEE"
+  |"NEST"
+  |"COMEDK"
+  |"NEET"
+  |"AIIMS"
+  |"JIPMER"
+  |"NEET NTA"
+  |"INI-CET"
+  |"MHT-CET (PCB)"
+  |"KCET (Med)"
+  |"AP EAMCET";
+export type SubjectType =
+  |"Physics"
+  |"Chemistry"
+  |"Mathematics"
+  |"Biology"
+  |"English Proficiency"
+  |"Logical Reasoning"
+  |"English"
+  |"General Ability Test"
+  |"Aptitude"
+  |"General Knowledge"
+  |"All MBBS Subjects";
 
 export interface Chapter {
   id: string;
@@ -21,7 +48,7 @@ export interface CustomTest {
   questionCount: number;
   duration: number; // minutes
   createdAt: string;
-  status: 'Not Attempted' | 'Attempted' | 'In Progress';
+  status:"Not Attempted" |"Attempted" |"In Progress";
   score?: number;
   totalMarks?: number;
   yearFilter?: string;
@@ -30,7 +57,7 @@ export interface CustomTest {
 
 export interface Question {
   id: string;
-  type: 'MCQ' | 'Numerical';
+  type:"MCQ" |"Numerical";
   subject: SubjectType;
   text: string;
   options?: string[];
@@ -44,14 +71,14 @@ export interface TestSession {
   startTime: number;
   answers: Record<string, string | number>; // questionId -> answer
   markedForReview: string[]; // questionId[]
-  status: 'In Progress' | 'Completed';
+  status:"In Progress" |"Completed";
 }
 
 export interface PYQPaper {
   id: string;
   name: string;
   year: number;
-  exam: 'JEE Main' | 'NEET';
-  status: 'Not Started' | 'Attempted' | 'In Progress';
+  exam:"JEE Main" |"NEET";
+  status:"Not Started" |"Attempted" |"In Progress";
   attemptDate?: string;
 }

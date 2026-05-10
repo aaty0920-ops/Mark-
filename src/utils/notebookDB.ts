@@ -11,12 +11,12 @@ export interface Note {
 
 export const notebookDB = {
   getNotes(): Note[] {
-    return JSON.parse(localStorage.getItem("mark_notes") || "[]");
+    return JSON.parse(localStorage.getItem("mark_notes") ||"[]");
   },
   saveNotes(notes: Note[]) {
     localStorage.setItem("mark_notes", JSON.stringify(notes));
   },
-  addNote(note: Omit<Note, 'id' | 'date'>) {
+  addNote(note: Omit<Note,"id" |"date">) {
     const notes = this.getNotes();
     const newNote: Note = {
       ...note,
@@ -30,7 +30,7 @@ export const notebookDB = {
   },
   updateNote(id: number, updatedFields: Partial<Note>) {
     const notes = this.getNotes();
-    const index = notes.findIndex(n => n.id === id);
+    const index = notes.findIndex((n) => n.id === id);
     if (index !== -1) {
       notes[index] = { ...notes[index], ...updatedFields };
       this.saveNotes(notes);
@@ -38,7 +38,7 @@ export const notebookDB = {
   },
   deleteNote(id: number) {
     let notes = this.getNotes();
-    notes = notes.filter(n => n.id !== id);
+    notes = notes.filter((n) => n.id !== id);
     this.saveNotes(notes);
-  }
+  },
 };

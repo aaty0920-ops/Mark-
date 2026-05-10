@@ -1,4 +1,4 @@
-import { FormulaCard } from '../data/formulas';
+import { FormulaCard } from"../data/formulas";
 
 export interface CustomFormulaCard extends FormulaCard {
   subjectKey: string;
@@ -9,12 +9,12 @@ export interface CustomFormulaCard extends FormulaCard {
 
 export const customFormulasDB = {
   getCustomFormulas(): CustomFormulaCard[] {
-    return JSON.parse(localStorage.getItem("mark_custom_formulas") || "[]");
+    return JSON.parse(localStorage.getItem("mark_custom_formulas") ||"[]");
   },
   saveCustomFormulas(formulas: CustomFormulaCard[]) {
     localStorage.setItem("mark_custom_formulas", JSON.stringify(formulas));
   },
-  addFormula(formula: Omit<CustomFormulaCard, 'id' | 'status'>) {
+  addFormula(formula: Omit<CustomFormulaCard,"id" |"status">) {
     const formulas = this.getCustomFormulas();
     const newFormula: CustomFormulaCard = {
       ...formula,
@@ -24,7 +24,7 @@ export const customFormulasDB = {
         memorized: false,
         bookmarked: false,
         need_revision: false,
-      }
+      },
     };
     formulas.push(newFormula);
     this.saveCustomFormulas(formulas);
@@ -32,7 +32,7 @@ export const customFormulasDB = {
   },
   deleteFormula(id: string) {
     let formulas = this.getCustomFormulas();
-    formulas = formulas.filter(f => f.id !== id);
+    formulas = formulas.filter((f) => f.id !== id);
     this.saveCustomFormulas(formulas);
-  }
+  },
 };

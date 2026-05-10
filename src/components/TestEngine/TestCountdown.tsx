@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect } from"react";
+import { motion, AnimatePresence } from"motion/react";
 
 interface TestCountdownProps {
   onComplete: () => void;
@@ -19,7 +19,7 @@ const TestCountdown: React.FC<TestCountdownProps> = ({ onComplete }) => {
   }, [count, onComplete]);
 
   return (
-    <div className="fixed inset-0 bg-[#111111] z-[100] flex flex-col items-center justify-center overflow-hidden text-white">
+    <div className="fixed inset-0 bg-white dark:bg-slate-900 z-[100] flex flex-col items-center justify-center overflow-hidden text-slate-900 dark:text-white">
       <div className="text-center relative z-10 flex flex-col items-center">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -30,8 +30,10 @@ const TestCountdown: React.FC<TestCountdownProps> = ({ onComplete }) => {
         </motion.div>
 
         <h2 className="text-3xl font-medium mb-2">Grab Your Pen & Paper</h2>
-        <h3 className="text-2xl text-gray-200 mb-12">Test starts in</h3>
-        
+        <h3 className="text-2xl text-slate-700 dark:text-slate-200 mb-12">
+          Test starts in
+        </h3>
+
         <div className="h-40 flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.div
@@ -42,7 +44,7 @@ const TestCountdown: React.FC<TestCountdownProps> = ({ onComplete }) => {
               transition={{ duration: 0.2 }}
               className="text-[12rem] font-medium text-[#5AB2FF] leading-none"
             >
-              {count > 0 ? count : 'GO!'}
+              {count > 0 ? count :"GO!"}
             </motion.div>
           </AnimatePresence>
         </div>

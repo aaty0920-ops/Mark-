@@ -18,13 +18,13 @@ export function overallStats(reports: TestReport[]) {
   let wrong = 0;
   let total = 0;
 
-  reports.forEach(r => {
+  reports.forEach((r) => {
     correct += r.correct;
     wrong += r.wrong;
     total += r.total;
   });
 
-  const accuracy = total > 0 ? ((correct / total) * 100).toFixed(2) : '0.00';
+  const accuracy = total > 0 ? ((correct / total) * 100).toFixed(2) :"0.00";
 
   return { correct, wrong, total, accuracy };
 }
@@ -32,7 +32,7 @@ export function overallStats(reports: TestReport[]) {
 export function subjectStats(reports: TestReport[]) {
   const subjects: Record<string, { correct: number; total: number }> = {};
 
-  reports.forEach(r => {
+  reports.forEach((r) => {
     if (!subjects[r.subject]) {
       subjects[r.subject] = { correct: 0, total: 0 };
     }
@@ -46,7 +46,7 @@ export function subjectStats(reports: TestReport[]) {
 export function chapterStats(reports: TestReport[]) {
   const chapters: Record<string, { correct: number; total: number }> = {};
 
-  reports.forEach(r => {
+  reports.forEach((r) => {
     if (!chapters[r.chapter]) {
       chapters[r.chapter] = { correct: 0, total: 0 };
     }
@@ -57,7 +57,9 @@ export function chapterStats(reports: TestReport[]) {
   return chapters;
 }
 
-export function weakChapters(chapters: Record<string, { correct: number; total: number }>) {
+export function weakChapters(
+  chapters: Record<string, { correct: number; total: number }>,
+) {
   return Object.entries(chapters)
     .filter(([_, data]) => {
       const acc = data.total > 0 ? (data.correct / data.total) * 100 : 0;
@@ -65,11 +67,16 @@ export function weakChapters(chapters: Record<string, { correct: number; total: 
     })
     .map(([chapter, data]) => ({
       chapter,
-      accuracy: data.total > 0 ? ((data.correct / data.total) * 100).toFixed(2) : '0.00'
+      accuracy:
+        data.total > 0
+          ? ((data.correct / data.total) * 100).toFixed(2)
+          :"0.00",
     }));
 }
 
-export function strongChapters(chapters: Record<string, { correct: number; total: number }>) {
+export function strongChapters(
+  chapters: Record<string, { correct: number; total: number }>,
+) {
   return Object.entries(chapters)
     .filter(([_, data]) => {
       const acc = data.total > 0 ? (data.correct / data.total) * 100 : 0;
@@ -77,7 +84,10 @@ export function strongChapters(chapters: Record<string, { correct: number; total
     })
     .map(([chapter, data]) => ({
       chapter,
-      accuracy: data.total > 0 ? ((data.correct / data.total) * 100).toFixed(2) : '0.00'
+      accuracy:
+        data.total > 0
+          ? ((data.correct / data.total) * 100).toFixed(2)
+          :"0.00",
     }));
 }
 
@@ -85,7 +95,7 @@ export function timeAnalysis(reports: TestReport[]) {
   if (reports.length === 0) return 0;
   let totalTime = 0;
 
-  reports.forEach(r => {
+  reports.forEach((r) => {
     totalTime += r.timeTaken;
   });
 
@@ -94,23 +104,23 @@ export function timeAnalysis(reports: TestReport[]) {
 }
 
 export function accuracyTrend(reports: TestReport[]) {
-  return reports.map(r => {
+  return reports.map((r) => {
     return {
       date: r.date,
-      accuracy: r.total > 0 ? (r.correct / r.total) * 100 : 0
+      accuracy: r.total > 0 ? (r.correct / r.total) * 100 : 0,
     };
   });
 }
 
-export function saveTestReport(report: Omit<TestReport, 'id'>) {
+export function saveTestReport(report: Omit<TestReport,"id">) {
   const reports = getTestReports();
   const newReport = { ...report, id: Date.now().toString() };
   reports.push(newReport);
-  localStorage.setItem('mark_reports', JSON.stringify(reports));
+  localStorage.setItem("mark_reports", JSON.stringify(reports));
   return newReport;
 }
 
 export function getTestReports(): TestReport[] {
-  const data = localStorage.getItem('mark_reports');
+  const data = localStorage.getItem("mark_reports");
   return data ? JSON.parse(data) : [];
 }
