@@ -67,15 +67,15 @@ export default function DPPChapter() {
     setShowModeModal(true);
   };
 
-  const handleModeSelect = (mode:"quiz" |"assignment") => {
+  const handleModeSelect = (mode: "quiz" | "assignment") => {
     setShowModeModal(false);
-    if (mode ==="quiz") {
+    if (mode === "quiz") {
       navigate("/app/practice", {
-        state: { source:"dpp_quiz", dppId: selectedDpp, chapterName },
+        state: { source: "dpp_quiz", dppId: selectedDpp, chapterName },
       });
     } else {
-      navigate(`/app/dpp/assignment/${selectedDpp}`, {
-        state: { chapterName },
+      navigate("/app/practice", {
+        state: { source: "dpp_assignment", dppId: selectedDpp, chapterName },
       });
     }
   };

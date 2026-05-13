@@ -154,9 +154,10 @@ const PracticeMCQScreen = () => {
 
   // Get initial index from location state, fallback to 0
   const initialIndex = location.state?.questionIndex || 0;
-  const source = location.state?.source ||"unknown";
-  const isChapterWisePYQ = source ==="chapter-wise-pyq";
-  const isDppQuiz = source ==="dpp_quiz";
+  const source = location.state?.source || "unknown";
+  const isChapterWisePYQ = source === "chapter-wise-pyq";
+  const isDppQuiz = source === "dpp_quiz";
+  const isAssignmentMode = source === "dpp_assignment";
   const [isReviewMode, setIsReviewMode] = useState(false);
   const isQuizActive = isDppQuiz && !isReviewMode;
 
@@ -733,7 +734,7 @@ const PracticeMCQScreen = () => {
               <Trophy size={40} className="text-brand" />
             </div>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              Quiz Completed!
+              {isAssignmentMode ? "Assignment Completed!" : "Quiz Completed!"}
             </h2>
             <p className="text-slate-500 dark:text-slate-400">
               Here's your performance report
@@ -837,7 +838,7 @@ const PracticeMCQScreen = () => {
             }}
             className="p-1 md:p-2 -ml-1 md:-ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-800 rounded-full transition-colors shrink-0"
           >
-            <ArrowLeft size={20} />
+            <X size={24} />
           </button>
           <div className="font-bold text-xs sm:text-sm md:text-base flex flex-wrap items-center gap-2 md:gap-3">
             <span className="whitespace-nowrap">
@@ -857,7 +858,7 @@ const PracticeMCQScreen = () => {
             )}
             {!isQuizActive && !isReviewMode && (
               <div className="flex items-center gap-1 md:gap-1.5 text-blue-400 bg-blue-400/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[10px] md:text-xs font-bold whitespace-nowrap">
-                <span>Quiz Time: {formatOverallTime()}</span>
+                <span>{isAssignmentMode ? "Total Time:" : "Quiz Time:"} {formatOverallTime()}</span>
               </div>
             )}
           </div>
@@ -1040,9 +1041,9 @@ const PracticeMCQScreen = () => {
                       onClick={() => setShowSolution(!showSolution)}
                       className="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-900/10 dark:border-white/10 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 transition-colors"
                     >
-                      {showSolution ?"Hide Solution" :"Show Solution"}
+                      {showSolution ? "Hide Solution" : "Show Solution"}
                     </button>
-                    {questionStates[currentQuestion.id] ==="incorrect" && (
+                    {questionStates[currentQuestion.id] === "incorrect" && (
                       <button
                         onClick={() => {
                           setQuestionStates((prev) => {
@@ -1071,13 +1072,65 @@ const PracticeMCQScreen = () => {
                 )}
               </div>
             )}
-            {isQuizActive && currentIndex === MOCK_QUESTIONS.length - 1 && (
-              <button
-                onClick={() => setShowSubmitConfirm(true)}
-                className="w-full py-3 bg-brand text-white border border-brand/20 rounded-xl font-bold hover:bg-brand-light transition-colors shadow-lg shadow-brand/20 flex items-center justify-center gap-2"
-              >
-                <span>Submit Quiz</span> <CheckCircle2 size={20} />
-              </button>
+            
+            {!isQuizActive && (
+              <div className="flex gap-3 mt-2">
+                 <button
+                    onClick={handlePrev}
+                    disabled={currentIndex === 0}
+                    className="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-900/10 dark:border-white/10 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  {currentIndex === MOCK_QUESTIONS.length - 1 ? (
+                    <button
+                      onClick={() => setShowSubmitConfirm(true)}
+                      className="flex-[2] py-3 bg-brand text-white border border-brand/20 rounded-xl font-bold hover:bg-brand-light transition-colors shadow-lg shadow-brand/20"
+                    >
+                      Finish Assignment
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleNext}
+                      className="flex-[2] py-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-900/10 dark:border-white/10 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next Question
+                    </button>
+                  )}
+              </div>
+            )}
+            {isQuizActive && (
+              <div className="flex gap-3">
+                <button
+                  onClick={handlePrev}
+                  disabled={currentIndex === 0}
+                  className="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-900/10 dark:border-white/10 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hidden sm:block"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleClear}
+                  disabled={userAnswers[currentQuestion.id] === undefined}
+                  className="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-900/10 dark:border-white/10 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Clear
+                </button>
+                {currentIndex === MOCK_QUESTIONS.length - 1 ? (
+                  <button
+                    onClick={() => setShowSubmitConfirm(true)}
+                    className="flex-[2] py-3 bg-brand text-white border border-brand/20 rounded-xl font-bold hover:bg-brand-light transition-colors shadow-lg shadow-brand/20 flex items-center justify-center gap-2"
+                  >
+                    <span>Submit Quiz</span> <CheckCircle2 size={20} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleNext}
+                    className="flex-[2] py-3 bg-brand text-white border border-brand/20 rounded-xl font-bold hover:bg-brand-light transition-colors shadow-lg shadow-brand/20 flex items-center justify-center gap-2"
+                  >
+                    Save & Next
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </motion.div>
@@ -1655,10 +1708,10 @@ const PracticeMCQScreen = () => {
                   <PauseCircle size={32} className="text-amber-500" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                  Pause Quiz?
+                  {isQuizActive ? "Pause Quiz?" : "Pause Practice?"}
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 text-sm">
-                  Are you sure you want to pause and exit? Your progress and timer will be paused.
+                  {isQuizActive ? "Are you sure you want to pause and exit? Your progress and timer will be paused." : "Are you sure you want to pause and exit? Your progress will be saved."}
                 </p>
 
                 <div className="mt-4 flex justify-center gap-4 text-sm">
@@ -1705,11 +1758,12 @@ const PracticeMCQScreen = () => {
                   <CheckCircle2 size={32} className="text-brand" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                  Submit Quiz?
+                  {isAssignmentMode ? "Finish Assignment?" : "Submit Quiz?"}
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 text-sm">
-                  Are you sure you want to submit your quiz? You won't be able
-                  to change your answers after submission.
+                  {isAssignmentMode 
+                    ? "Are you sure you want to finish the assignment and view your report?" 
+                    : "Are you sure you want to submit your quiz? You won't be able to change your answers after submission."}
                 </p>
 
                 <div className="mt-4 flex justify-center gap-4 text-sm">

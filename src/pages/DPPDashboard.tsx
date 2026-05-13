@@ -102,6 +102,8 @@ export default function DPPDashboard() {
     }[] = [];
 
     Object.entries(examData).forEach(([subj, chapters]) => {
+      if (selectedSubject && subj !== selectedSubject) return;
+
       chapters.forEach((chapterName, index) => {
         const classLevel = index % 2 === 0 ?"11th" :"12th";
         const importanceLevel = importanceLevels[index % 4];
@@ -121,7 +123,68 @@ export default function DPPDashboard() {
     });
 
     return allChapters;
-  }, [examData]);
+  }, [examData, selectedSubject]);
+
+  const renderSubjectSelection = () => {
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white pb-24 relative overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-6 pt-10 sticky top-0 z-40 bg-white/8 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-900/5 dark:border-white/5">
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 dark:bg-slate-800 border border-slate-900/5 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm"
+            >
+              <ArrowLeft size={20} strokeWidth={2.5} />
+            </button>
+            <div className="w-12 h-12 rounded-[1rem] bg-brand text-white flex items-center justify-center shadow-lg shadow-brand/20">
+              <Bookmark size={24} strokeWidth={1.5} />
+            </div>
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+              Solve DPPs
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Select a subject to begin practicing
+            </p>
+          </div>
+        </div>
+
+        <div className="px-6 mt-8 space-y-4 relative z-10">
+          {(Object.keys(subjectStyles) as (keyof typeof subjectStyles)[]).map((subj) => {
+            const style = subjectStyles[subj];
+            const Icon = style.icon;
+            return (
+              <motion.div
+                key={subj}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setSelectedSubject(subj)}
+                className={`bg-slate-50 dark:bg-slate-800 border ${style.border} rounded-[1.5rem] p-6 cursor-pointer hover:shadow-md transition-all group flex items-center gap-4`}
+              >
+                <div
+                  className={`w-14 h-14 rounded-[1.25rem] ${style.iconBg} text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}
+                >
+                  <Icon size={28} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-slate-900 dark:text-white text-xl mb-1">
+                    {subj}
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-semibold">
+                    {examData[subj]?.length || 0} Chapters
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-slate-900 shadow-sm text-slate-400 group-hover:text-brand group-hover:shadow-md transition-all">
+                  <ChevronRight size={20} strokeWidth={2.5} />
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   const renderChapterSelection = () => {
     const filteredChapters = currentChapters.filter((c) => {
@@ -144,7 +207,7 @@ export default function DPPDashboard() {
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => setSelectedSubject(null)}
                 className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 dark:bg-slate-800 border border-slate-900/5 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:bg-slate-700 hover:text-slate-900 dark:hover:text-white dark:text-white transition-all shadow-sm"
               >
                 <ArrowLeft size={20} strokeWidth={2.5} />
@@ -158,7 +221,7 @@ export default function DPPDashboard() {
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
-              Solve DPPs
+              {selectedSubject} DPPs
             </h1>
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-600"></span>
@@ -331,15 +394,27 @@ export default function DPPDashboard() {
   return (
     <>
       <AnimatePresence mode="wait">
-        <motion.div
-          key="chapter-selection"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-        >
-          {renderChapterSelection()}
-        </motion.div>
+        {selectedSubject === null ? (
+          <motion.div
+            key="subject-selection"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderSubjectSelection()}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="chapter-selection"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderChapterSelection()}
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Filter Modal */}
